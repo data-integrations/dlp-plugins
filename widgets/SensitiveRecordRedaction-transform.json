@@ -1,0 +1,451 @@
+{
+  "metadata": {
+    "spec-version": "1.0"
+  },
+  "display-name": "Redact",
+  "configuration-groups": [
+    {
+      "label": "Custom Template",
+      "properties": [
+        {
+          "widget-type": "toggle",
+          "name": "customTemplateEnabled",
+          "label": "Use custom template",
+          "widget-attributes": {
+            "default": "false",
+            "on": {
+              "value": "true",
+              "label": "Yes"
+            },
+            "off": {
+              "value": "false",
+              "label": "No"
+            }
+          }
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Template ID",
+          "name": "templateId",
+          "widget-attributes": {
+            "placeholder": "Template ID"
+          }
+        }
+      ]
+    },
+    {
+      "label": "Matching",
+      "properties": [
+        {
+          "widget-type": "dlp",
+          "label": "Fields to Transform",
+          "name": "fieldsToTransform",
+          "widget-attributes": {
+            "filters": [
+              {
+                "id": "NONE",
+                "label": "Custom Template"
+              },
+              {
+                "id": "DEMOGRAPHIC",
+                "label": "Demographics"
+              },
+              {
+                "id": "LOCATION",
+                "label": "Location"
+              },
+              {
+                "id": "TAX",
+                "label": "Tax IDs"
+              },
+              {
+                "id": "CREDIT_CARD",
+                "label": "Credit Card Numbers"
+              },
+              {
+                "id": "PASSPORT",
+                "label": "Passport Numbers"
+              },
+              {
+                "id": "HEALTH",
+                "label": "Health IDs"
+              },
+              {
+                "id": "NATIONAL_ID",
+                "label": "National Identification"
+              },
+              {
+                "id": "DRIVER_LICENSE",
+                "label": "Driver License IDs"
+              },
+              {
+                "id": "INSURANCE",
+                "label": "Insurance Numbers"
+              }
+            ],
+            "transforms": [
+              {
+                "label": "Masking",
+                "name": "MASKING",
+                "supportedTypes": [
+                  "string"
+                ],
+                "options": [
+                  {
+                    "name": "maskingChar",
+                    "widget-type": "textbox",
+                    "label": "Masking Character",
+                    "widget-attributes": {
+                      "placeholder": "Character to be used to mask sensitive data",
+                      "required": "true"
+                    }
+                  },
+                  {
+                    "name": "numberToMask",
+                    "widget-type": "number",
+                    "label": "Number of characters to mask",
+                    "widget-attributes": {
+                      "min": "0",
+                      "default": "0",
+                      "description": "Number of characters to mask within the matching text. Leave blank or use 0 to mask all characters"
+                    }
+                  },
+                  {
+                    "widget-type": "toggle",
+                    "name": "reverseOrder",
+                    "label": "Reverse Order",
+                    "widget-attributes": {
+                      "description": "Characters will be masked starting from the end of the string if order is reversed",
+                      "default": "false",
+                      "on": {
+                        "value": "true",
+                        "label": "True"
+                      },
+                      "off": {
+                        "value": "false",
+                        "label": "False"
+                      }
+                    }
+                  },
+                  {
+                    "name": "charsToIgnoreEnum",
+                    "widget-type": "select",
+                    "label": "Characters to skip",
+                    "widget-attributes": {
+                      "description": "Characters to be skipped within the matching text",
+                      "default": "COMMON_CHARS_TO_IGNORE_UNSPECIFIED",
+                      "values": [
+                        {
+                          "value": "COMMON_CHARS_TO_IGNORE_UNSPECIFIED",
+                          "label": "None"
+                        },
+                        {
+                          "value": "NUMERIC",
+                          "label": "Numbers (0-9)"
+                        },
+                        {
+                          "value": "ALPHA_UPPER_CASE",
+                          "label": "Alphabet Upper Case (A-Z)"
+                        },
+                        {
+                          "value": "ALPHA_LOWER_CASE",
+                          "label": "Alphabet Lower Case (a-z)"
+                        },
+                        {
+                          "value": "PUNCTUATION",
+                          "label": "Punctuation (!\"#$%&'()*+,-./:;<=>?@[]^_`{|}~)"
+                        },
+                        {
+                          "value": "WHITESPACE",
+                          "label": "Whitespace"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "label": "Replace with value",
+                "name": "REPLACE_VALUE",
+                "supportedTypes":[
+                  "string"
+                ],
+                "options": [
+                  {
+                    "name": "newValue",
+                    "widget-type": "textbox",
+                    "label": "Replace Value",
+                    "widget-attributes": {
+                      "placeholder": "New value",
+                      "required": "true",
+                      "description":"Text that will be used to replace data that matches the filter"
+                    }
+                  }
+                ]
+              },
+              {
+                "label": "Redact",
+                "name": "REDACT",
+                "supportedTypes":[
+                  "string"
+                ],
+                "options": [
+                ]
+              },
+              {
+                "label": "One-way Hash",
+                "name": "CRYPTO_HASH",
+                "options": [
+                  {
+                    "name": "keyType",
+                    "widget-type": "select",
+                    "label": "Crypto Key Type",
+                    "widget-attributes": {
+                      "description": "Type of key to use for the cryptographic hash.",
+                      "default": "TRANSIENT",
+                      "values": [
+                        {
+                          "value": "TRANSIENT",
+                          "label": "Transient"
+                        },
+                        {
+                          "value": "UNWRAPPED",
+                          "label": "Unwrapped Key"
+                        },
+                        {
+                          "value": "KMS_WRAPPED",
+                          "label": "KMS Wrapped Key"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "name",
+                    "widget-type": "textbox",
+                    "label": "Transient Key Name",
+                    "widget-attributes": {
+                      "macro": "true",
+                      "placeholder": "Transient key name",
+                      "description": "Optional name for transient key that will be generated"
+                    }
+                  },
+                  {
+                    "name": "key",
+                    "widget-type": "textbox",
+                    "label": "Unwrapped Key",
+                    "widget-attributes": {
+                      "macro": "true",
+                      "placeholder": "Unwrapped key",
+                      "description": "Key to be used for cryptographic hash",
+                      "required": "true"
+                    }
+                  },
+                  {
+                    "name": "wrappedKey",
+                    "widget-type": "textbox",
+                    "label": "Wrapped Key",
+                    "widget-attributes": {
+                      "macro": "true",
+                      "placeholder": "Wrapped key",
+                      "description": "Wrapped key to be unwrapped using KMS key",
+                      "required": "true"
+                    }
+                  },
+                  {
+                    "name": "cryptoKeyName",
+                    "widget-type": "textbox",
+                    "label": "KMS Key Name",
+                    "widget-attributes": {
+                      "macro": "true",
+                      "placeholder": "Key Name",
+                      "description": "Name of the key stored in Key Management Service that will be used to unwrap the wrapped key",
+                      "required": "true"
+                    }
+                  }
+                ],
+                "filters": [
+                  {
+                    "name": "transient key rules",
+                    "condition": {
+                      "property": "keyType",
+                      "operator": "equal to",
+                      "value": "TRANSIENT"
+                    },
+                    "show": [
+                      {
+                        "name": "name"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "unwrapped key rules",
+                    "condition": {
+                      "property": "keyType",
+                      "operator": "equal to",
+                      "value": "UNWRAPPED"
+                    },
+                    "show": [
+                      {
+                        "name": "key"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "kms wrapped key rules",
+                    "condition": {
+                      "property": "keyType",
+                      "operator": "equal to",
+                      "value": "KMS_WRAPPED"
+                    },
+                    "show": [
+                      {
+                        "name": "wrappedKey"
+                      },
+                      {
+                        "name": "cryptoKeyName"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "label": "Date Shift",
+                "name": "DATE_SHIFT",
+                "supportedTypes": [
+                  "date",
+                  "timestamp-micros",
+                  "timestamp-millis"
+                ],
+                "options": [
+                  {
+                    "name": "lowerBoundDays",
+                    "widget-type": "number",
+                    "label": "Lower Bound (in days)",
+                    "widget-attributes": {
+                      "min": "-365251",
+                      "max": "365251",
+                      "default": "0",
+                      "description": "Lower bound for range (inclusive) that will be used to randomly shift the dates",
+                      "required": "true"
+                    }
+                  },
+                  {
+                    "name": "upperBoundDays",
+                    "widget-type": "number",
+                    "label": "Upper Bound (in days)",
+                    "widget-attributes": {
+                      "min": "-365251",
+                      "max": "365251",
+                      "default": "1",
+                      "description": "Upper bound for range (inclusive) that will be used to randomly shift the dates",
+                      "required": "true"
+                    }
+                  }
+                ],
+                "filters": [
+                  {
+                    "name": "transient key rules",
+                    "condition": {
+                      "property": "keyType",
+                      "operator": "equal to",
+                      "value": "TRANSIENT"
+                    },
+                    "show": [
+                      {
+                        "name": "name"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "unwrapped key rules",
+                    "condition": {
+                      "property": "keyType",
+                      "operator": "equal to",
+                      "value": "UNWRAPPED"
+                    },
+                    "show": [
+                      {
+                        "name": "key"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "kms wrapped key rules",
+                    "condition": {
+                      "property": "keyType",
+                      "operator": "equal to",
+                      "value": "KMS_WRAPPED"
+                    },
+                    "show": [
+                      {
+                        "name": "wrappedKey"
+                      },
+                      {
+                        "name": "cryptoKeyName"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "Credentials",
+      "properties": [
+        {
+          "widget-type": "textbox",
+          "label": "Service Account Path",
+          "name": "serviceFilePath",
+          "widget-attributes": {
+            "default": "auto-detect"
+          }
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Project Id",
+          "name": "project",
+          "widget-attributes": {
+            "default": "auto-detect"
+          }
+        }
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "name": "schema",
+      "widget-type": "schema",
+      "widget-attributes": {
+        "schema-types": [
+          "boolean",
+          "int",
+          "long",
+          "float",
+          "double",
+          "bytes",
+          "string",
+          "map<string, string>"
+        ],
+        "schema-default-type": "string"
+      }
+    }
+  ],
+  "filters": [
+    {
+      "name": "Filter for simple condition objects - 1",
+      "condition": {
+        "property": "customTemplateEnabled",
+        "operator": "equal to",
+        "value": "true"
+      },
+      "show": [
+        {
+          "name": "templateId"
+        }
+      ]
+    }
+  ]
+}
