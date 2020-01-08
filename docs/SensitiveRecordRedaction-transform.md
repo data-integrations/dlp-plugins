@@ -1,0 +1,38 @@
+# Cloud Data Loss Prevention (DLP) Redact
+
+Additional Charges
+-----------
+This plugin uses Google's Data Loss Prevention APIs which charge the user depending 
+on the volume of data **analysed** (not transformed). More details on the exact 
+costs can be found [here](https://cloud.google.com/dlp/pricing#content-pricing). 
+
+Description
+-----------
+This plugin transforms sensitive records from the input stream. A record is 
+deemed sensitive if it matches some pre-defined DLP filters or a custom user-defined 
+template. See the *DLP Filter Mapping* section for more details on the supported 
+pre-defined filters. More information about custom templates can be found [here](https://cloud.google.com/dlp/docs/creating-templates-inspect#about_templates).
+
+This plugin currently supports the 5 most commonly used DLP 
+transformations:
+
+* **[Date Shift](https://cloud.google.com/dlp/docs/transformations-reference#date-shift)**: Apply a random shift to a date/timestamp value (supported types: `date`, `timestamp`)
+* **[Masking](https://cloud.google.com/dlp/docs/transformations-reference#masking)**: Mask sensitive text by replacing characters with the Masking Character (supported types: `string`)
+* **[One-way Hash](https://cloud.google.com/dlp/docs/transformations-reference#crypto-hashing)**: Apply a one-way cryptographic hash function to the data (supported types: `all`)
+* **[Redact](https://cloud.google.com/dlp/docs/transformations-reference#redaction)**: Remove sensitive text from the record (supported types: `string`)
+* **[Replace with value](https://cloud.google.com/dlp/docs/reference/rest/v2/organizations.deidentifyTemplates#DeidentifyTemplate.ReplaceValueConfig)**: Replace sensitive text with a new value (supported types: `string`)
+
+DLP Filter Mapping
+-----------
+This plugin supports most pre-defined DLP filters, they are grouped into boarder
+categories for ease of use. The contents of each group are as follows:
+
+* **Demographic**: PERSON_NAME, AGE, DATE_OF_BIRTH, PHONE_NUMBER, ETHNIC_GROUP
+* **Location**: LOCATION, MAC_ADDRESS, MAC_ADDRESS_LOCAL
+* **Tax IDs**: AUSTRALIA_TAX_FILE_NUMBER, DENMARK_CPR_NUMBER, NORWAY_NI_NUMBER, PORTUGAL_CDC_NUMBER, US_ADOPTION_TAXPAYER_IDENTIFICATION_NUMBER, US_EMPLOYER_IDENTIFICATION_NUMBER,US_PREPARER_TAXPAYER_IDENTIFICATION_NUMBER
+* **Credit Card Numbers**: CREDIT_CARD_NUMBER 
+* **Passport Numbers**: NETHERLANDS_PASSPORT
+* **Health IDs**: US_HEALTHCARE_NPI, CANADA_OHIP
+* **National IDs**: CHINA_RESIDENT_ID_NUMBER, DENMARK_CPR_NUMBER, FRANCE_CNI, FRANCE_NIR, FINLAND_NATIONAL_ID_NUMBER, JAPAN_INDIVIDUAL_NUMBER, NORWAY_NI_NUMBER, PARAGUAY_CIC_NUMBER, POLAND_PESEL_NUMBER, POLAND_NATIONAL_ID_NUMBER, PORTUGAL_CDC_NUMBER, SPAIN_NIE_NUMBER, SPAIN_NIF_NUMBER, SWEDEN_NATIONAL_ID_NUMBER, US_SOCIAL_SECURITY_NUMBER, URUGUAY_CDI_NUMBER, VENEZUELA_CDI_NUMBER
+* **Driver License IDs**: SPAIN_DRIVERS_LICENSE_NUMBER, US_DRIVERS_LICENSE_NUMBER
+<!-- * **Insurance**:  CANADA_SOCIAL_INSURANCE_NUMBER, UK_NATIONAL_INSURANCE_NUMBER -->
