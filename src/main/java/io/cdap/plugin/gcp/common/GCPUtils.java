@@ -1,5 +1,5 @@
 /*
- * Copyright © 2018 Cask Data, Inc.
+ * Copyright © 2019 Cask Data, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,7 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 /**
- * GCP utility class to get service account credentials
+ * GCP utility class to get service account credentials.
  */
 public class GCPUtils {
   public static final String CMEK_KEY = "gcp.cmek.key.name";
@@ -33,5 +33,4 @@ public class GCPUtils {
       return ServiceAccountCredentials.fromStream(serviceAccountStream);
     }
   }
-
 }
