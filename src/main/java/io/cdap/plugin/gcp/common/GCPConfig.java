@@ -57,7 +57,7 @@ public class GCPConfig extends PluginConfig {
    * 'auto-detect'
    */
   @Nullable
-  public String tryGetProject() {
+  public String getProject() {
     if (containsMacro(NAME_PROJECT) && Strings.isNullOrEmpty(project)) {
       return null;
     }
