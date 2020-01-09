@@ -19,7 +19,6 @@ package io.cdap.plugin.dlp;
 import com.google.api.gax.rpc.ResourceExhaustedException;
 import com.google.cloud.dlp.v2.DlpServiceClient;
 import com.google.cloud.dlp.v2.DlpServiceSettings;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.privacy.dlp.v2.ContentItem;
 import com.google.privacy.dlp.v2.GetInspectTemplateRequest;
 import com.google.privacy.dlp.v2.InspectContentRequest;
@@ -103,8 +102,8 @@ public final class SensitiveRecordFilter extends SplitterTransform<StructuredRec
 
       client = DlpServiceClient.create(getSettings());
     } catch (IOException e) {
-      LOG.error("Failed to create DLP Client: "+e.printStackTrace());
-      stageConfigurer.getFailureCollector().addFailure("Failed to create DLP client: "+e.getMessage());
+      LOG.error("Failed to create DLP Client: {}", e.getMessage(), e);
+      stageConfigurer.getFailureCollector().addFailure("Failed to create DLP client: " + e.getMessage(), "");
     }
 
     config.validate(stageConfigurer.getFailureCollector(), inputSchema);

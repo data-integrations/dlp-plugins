@@ -313,7 +313,7 @@ public class SensitiveRecordRedaction extends Transform<StructuredRecord, Struct
       if (fieldsToTransform != null) {
         try {
           List<DlpFieldTransformationConfig> transformationConfigs = parseTransformations();
-          HashMap<string, string> transforms = new HashMap<>();
+          HashMap<String, String> transforms = new HashMap<>();
           Boolean firstTransformUsedCustomTemplate = null;
           Boolean anyTransformUsedCustomTemplate = false;
           for (DlpFieldTransformationConfig config : transformationConfigs) {
