@@ -28,7 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Implementing the DlpTransformConfig interface for the DLP Masking transform
+ * Implementing the DlpTransformConfig interface for the DLP {@link MaskingTransformConfig}
  */
 public class MaskingTransformConfig implements DlpTransformConfig {
 

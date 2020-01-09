@@ -33,6 +33,10 @@ public class DlpFieldTransformationConfigCodec implements JsonDeserializer<DlpFi
 
   private final Map<String, Type> transformTypeDictionary = new HashMap<String, Type>() {{
     put("MASKING", MaskingTransformConfig.class);
+    put("REPLACE_VALUE", ReplaceValueTransformConfig.class);
+    put("REDACT", RedactTransformConfig.class);
+    put("CRYPTO_HASH", CryptoHashTransformationConfig.class);
+    put("DATE_SHIFT", DateShiftTransformationConfig.class);
   }};
 
   @Override
@@ -62,5 +66,4 @@ public class DlpFieldTransformationConfigCodec implements JsonDeserializer<DlpFi
 
     return new DlpFieldTransformationConfig(transform, fields, filters, transformProperties);
   }
-
 }
