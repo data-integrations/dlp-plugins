@@ -44,7 +44,7 @@ public final class Utils {
    * StructuredRecord
    *
    * @param table     Table representation from DLP containing new values to be updated
-   * @param oldRecord Exisiting StructuredRecord that needs to be updated
+   * @param oldRecord Existing StructuredRecord that needs to be updated
    * @return New StructuredRecord with the updated values
    * @throws Exception when table contain unexpected type or type-casting fails due to invalid values
    */
@@ -102,18 +102,39 @@ public final class Utils {
             throw new IllegalArgumentException("Failed to parse table into structured record");
         }
       } else {
-        recordBuilder.convertAndSet(fieldName, fieldValue.getStringValue());
+        Schema.Type type = fieldSchema.getType();
+        String value = "";
+        switch (type) {
+          case STRING:
+            value = fieldValue.getStringValue();
+            break;
+          case INT:
+          case LONG:
+            value = String.valueOf(fieldValue.getIntegerValue());
+            break;
+          case BOOLEAN:
+            value = String.valueOf(fieldValue.getBooleanValue());
+            break;
+          case DOUBLE:
+          case FLOAT:
+            value = String.valueOf(fieldValue.getFloatValue());
+            break;
+          default:
+            throw new IllegalStateException(
+              String.format("DLP plugin does not support type '%s' for field '%s'", type.toString(), fieldName));
+        }
+        recordBuilder.convertAndSet(fieldName, value);
       }
     }
     return recordBuilder.build();
   }
 
   /**
-   * Create a StructuredRecord Builder using an exisitng record as the starting point. This should be used to
-   * edit/update an exisitng record
+   * Create a StructuredRecord Builder using an existing record as the starting point. This should be used to
+   * edit/update an existing record
    *
    * @param record StructuredRecord to use as a base
-   * @return StrucutredRecord Builder with all fields from {@code record} set
+   * @return StructuredRecord Builder with all fields from {@code record} set
    */
   private static StructuredRecord.Builder createBuilderFromStructuredRecord(StructuredRecord record) {
     StructuredRecord.Builder recordBuilder = StructuredRecord.builder(record.getSchema());
@@ -237,7 +258,6 @@ public final class Utils {
 
       rowBuilder.addValues(valueBuilder.build());
     }
-
     tableBuiler.addRows(rowBuilder.build());
     return tableBuiler.build();
   }
