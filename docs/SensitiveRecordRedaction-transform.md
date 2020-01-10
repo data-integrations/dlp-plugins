@@ -3,8 +3,16 @@
 Additional Charges
 -----------
 This plugin uses Google's Data Loss Prevention APIs which charge the user depending 
-on the volume of data **analysed** (not transformed). More details on the exact 
+on the volume of data **analyzed** (not transformed). More details on the exact 
 costs can be found [here](https://cloud.google.com/dlp/pricing#content-pricing). 
+
+Permissions
+-----------
+In order for this plugin to function, it requires permissions to access the Data Loss Prevention APIs. These permissions
+granted through the service account that is provided in the plugin configuration. If the service account path is set to 
+`auto-detect` then it will use a service account with the name `service-<project-number>@gcp-sa-datafusion.iam.gserviceaccount.com`.
+
+The `DLP Administrator` role must be granted to the service account to allow this plugin to access the DLP APIs.
 
 Description
 -----------
@@ -36,3 +44,10 @@ categories for ease of use. The contents of each group are as follows:
 * **National IDs**: CHINA_RESIDENT_ID_NUMBER, DENMARK_CPR_NUMBER, FRANCE_CNI, FRANCE_NIR, FINLAND_NATIONAL_ID_NUMBER, JAPAN_INDIVIDUAL_NUMBER, NORWAY_NI_NUMBER, PARAGUAY_CIC_NUMBER, POLAND_PESEL_NUMBER, POLAND_NATIONAL_ID_NUMBER, PORTUGAL_CDC_NUMBER, SPAIN_NIE_NUMBER, SPAIN_NIF_NUMBER, SWEDEN_NATIONAL_ID_NUMBER, US_SOCIAL_SECURITY_NUMBER, URUGUAY_CDI_NUMBER, VENEZUELA_CDI_NUMBER
 * **Driver License IDs**: SPAIN_DRIVERS_LICENSE_NUMBER, US_DRIVERS_LICENSE_NUMBER
 <!-- * **Insurance**:  CANADA_SOCIAL_INSURANCE_NUMBER, UK_NATIONAL_INSURANCE_NUMBER -->
+
+Metrics
+-----------
+This plugin records three metrics:
+* `dlp.requests.count`: Total number of requests sent to Data Loss Prevention API
+* `dlp.requests.success`: Number of requests that were successfully processed by Data Loss Prevention API
+* `dlp.requests.fail`: Number of requests that failed
