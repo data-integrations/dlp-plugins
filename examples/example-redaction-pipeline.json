@@ -16,8 +16,8 @@
                     "label": "Call Center Records",
                     "artifact": {
                         "name": "google-cloud",
-                        "version": "0.13.2-SNAPSHOT",
-                        "scope": "USER"
+                        "version": "0.13.2",
+                        "scope": "SYSTEM"
                     },
                     "properties": {
                         "project": "auto-detect",
@@ -26,7 +26,7 @@
                         "filenameOnly": "false",
                         "recursive": "false",
                         "schema": "{\"type\":\"record\",\"name\":\"etlSchemaBody\",\"fields\":[{\"name\":\"offset\",\"type\":\"long\"},{\"name\":\"body\",\"type\":\"string\"}]}",
-                        "path": "gs://meseifan-dlp-demo/sampleDataSetSmall.csv",
+                        "path": "gs://dlp-demo/sampleDataSetSmall.csv",
                         "referenceName": "in"
                     }
                 },
@@ -45,7 +45,7 @@
                     "label": "Wrangler",
                     "artifact": {
                         "name": "wrangler-transform",
-                        "version": "4.1.1",
+                        "version": "4.1.4",
                         "scope": "SYSTEM"
                     },
                     "properties": {
@@ -76,8 +76,8 @@
                     "type": "transform",
                     "label": "Redact",
                     "artifact": {
-                        "name": "google-cloud",
-                        "version": "0.13.2-SNAPSHOT",
+                        "name": "dlp",
+                        "version": "1.0.0",
                         "scope": "USER"
                     },
                     "properties": {
@@ -113,8 +113,8 @@
                     "label": "Redacted Sink",
                     "artifact": {
                         "name": "google-cloud",
-                        "version": "0.13.2-SNAPSHOT",
-                        "scope": "USER"
+                        "version": "0.13.2",
+                        "scope": "SYSTEM"
                     },
                     "properties": {
                         "project": "auto-detect",
@@ -122,7 +122,7 @@
                         "format": "json",
                         "serviceFilePath": "auto-detect",
                         "location": "us",
-                        "path": "gs://meseifan-dlp-demo/Redacted",
+                        "path": "gs://dlp-demo/Redacted",
                         "referenceName": "out",
                         "schema": "{\"type\":\"record\",\"name\":\"etlSchemaBody\",\"fields\":[{\"name\":\"date\",\"type\":[{\"type\":\"long\",\"logicalType\":\"timestamp-micros\"},\"null\"]},{\"name\":\"loan_type\",\"type\":[\"string\",\"null\"]},{\"name\":\"loan\",\"type\":[\"string\",\"null\"]},{\"name\":\"bank\",\"type\":[\"string\",\"null\"]},{\"name\":\"state\",\"type\":[\"string\",\"null\"]},{\"name\":\"zip\",\"type\":[\"string\",\"null\"]},{\"name\":\"notes\",\"type\":[\"string\",\"null\"]}]}"
                     }

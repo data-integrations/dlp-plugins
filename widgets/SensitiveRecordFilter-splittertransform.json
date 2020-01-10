@@ -13,7 +13,7 @@
           "widget-type": "radio-group",
           "widget-attributes": {
             "layout": "inline",
-            "default": "record",
+            "default": "true",
             "options": [
               {
                 "id": "false",
