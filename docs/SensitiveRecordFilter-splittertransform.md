@@ -22,7 +22,7 @@ This plugin separates sensitive records from the input stream. A record is deeme
 The matching can be applied to the entire record or a particular field (recommended if the entire record is large, DLP supports a maximum of 0.5MB per record)
 
 There are three options for error handling in this plugin:
- * **Stop pipline**: Stops the pipeline as soon as an error is encountered
+ * **Stop pipeline**: Stops the pipeline as soon as an error is encountered
  * **Skip record**: The record that caused the error will be skipped and no error will be reported
  * **Send to error**: Send errors to the error port and continue running the pipeline
 
