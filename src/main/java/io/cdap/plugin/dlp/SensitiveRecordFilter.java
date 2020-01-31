@@ -296,7 +296,9 @@ public final class SensitiveRecordFilter extends SplitterTransform<StructuredRec
               .withConfigProperty(FIELD);
           }
 
-          Schema.Type type = inputSchema.getField(getFieldName()).getSchema().getType();
+          Schema fieldSchema = inputSchema.getField(getFieldName()).getSchema();
+          Schema.Type type = fieldSchema.isNullable() ? fieldSchema.getNonNullable().getType() :
+            fieldSchema.getType();
           if (!type.isSimpleType() || type.equals(Schema.Type.BYTES)) {
             collector.addFailure("Filtering on field supports only basic types " +
                                    "(string, bool, int, long, float, double).",
