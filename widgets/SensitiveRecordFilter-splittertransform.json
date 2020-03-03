@@ -76,7 +76,7 @@
           "widget-type": "radio-group",
           "widget-attributes": {
             "layout": "inline",
-            "default": "send-to-error",
+            "default": "stop-on-error",
             "options": [
               {
                 "id": "stop-on-error",
@@ -85,10 +85,6 @@
               {
                 "id": "skip-record",
                 "label": "Skip record"
-              },
-              {
-                "id": "send-to-error",
-                "label": "Send to error"
               }
             ]
           }
@@ -117,7 +113,6 @@
       ]
     }
   ],
-  "emit-errors": true,
   "outputs": [],
   "filters": [
     {
