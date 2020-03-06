@@ -26,6 +26,18 @@ There are three options for error handling in this plugin:
  * **Skip record**: The record that caused the error will be skipped and no error will be reported
  * **Send to error**: Send errors to the error port and continue running the pipeline
 
+Custom DLP Endpoint
+-------------------
+
+By default, plugin uses [Cloud DLP API endpoint](https://cloud.google.com/dlp/docs/reference/rpc).
+Should an alternate DLP API location be used, enable the `Custom DLP endpoint` switch under `Advanced settings`. 
+It will display custom endpoint settings, which by default point to a local DLP API address:
+ * **Host** - `dlp.local` by default - default hostname for a locally-exposed DLP API
+ * **Port** - `7332` by default - alternate port where DLP API is exposed
+ * **Send credentials** - `No` by default - you must enable send credentials if
+   you are accessing the Cloud DLP API through a proxy however it is optional if
+   you are using a local instance of DLP.
+
 Metrics
 -----------
 This plugin records three metrics:
