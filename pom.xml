@@ -21,7 +21,7 @@
 
   <groupId>io.cdap.plugin</groupId>
   <artifactId>dlp</artifactId>
-  <version>1.0.2</version>
+  <version>1.0.3</version>
   <name>Data Loss Prevention Plugins</name>
   <packaging>jar</packaging>
   <description>Plugins for Data Loss Prevention</description>

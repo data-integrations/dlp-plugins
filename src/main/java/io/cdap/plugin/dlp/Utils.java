@@ -241,14 +241,14 @@ public final class Utils {
             break;
           case INT:
           case LONG:
-            valueBuilder.setIntegerValue((Long) fieldValue);
+            valueBuilder.setIntegerValue(Long.parseLong(fieldValue.toString()));
             break;
           case BOOLEAN:
             valueBuilder.setBooleanValue((Boolean) fieldValue);
             break;
           case DOUBLE:
           case FLOAT:
-            valueBuilder.setFloatValue((Double) fieldValue);
+            valueBuilder.setFloatValue(Double.parseDouble(fieldValue.toString()));
             break;
           default:
             throw new IllegalStateException(
