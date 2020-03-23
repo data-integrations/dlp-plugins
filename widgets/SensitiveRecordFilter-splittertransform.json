@@ -115,6 +115,59 @@
           }
         }
       ]
+    },
+    {
+      "label": "Advanced configuration",
+      "properties": [
+        {
+          "widget-type": "toggle",
+          "name": "dlp-override-enabled",
+          "label": "Custom DLP endpoint",
+          "widget-attributes": {
+            "default": "false",
+            "on": {
+              "value": "true",
+              "label": "Yes"
+            },
+            "off": {
+              "value": "false",
+              "label": "No"
+            }
+          }
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Host",
+          "name": "dlp-host",
+          "widget-attributes": {
+            "default": "dlp.local"
+          }
+        },
+        {
+          "widget-type": "number",
+          "label": "Port",
+          "name": "dlp-port",
+          "widget-attributes": {
+            "default": "7332"
+          }
+        },
+        {
+          "widget-type": "toggle",
+          "name": "dlp-tls-enabled",
+          "label": "Send credentials",
+          "widget-attributes": {
+            "default": "false",
+            "on": {
+              "value": "true",
+              "label": "Yes"
+            },
+            "off": {
+              "value": "false",
+              "label": "No"
+            }
+          }
+        }
+      ]
     }
   ],
   "emit-errors": true,
@@ -130,6 +183,25 @@
       "show": [
         {
           "name": "field"
+        }
+      ]
+    },
+    {
+      "name": "Filter for DLP Container configuration",
+      "condition": {
+        "property": "dlp-override-enabled",
+        "operator": "equal to",
+        "value": "true"
+      },
+      "show": [
+        {
+          "name": "dlp-host"
+        },
+        {
+          "name": "dlp-port"
+        },
+        {
+          "name": "dlp-tls-enabled"
         }
       ]
     }

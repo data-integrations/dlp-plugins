@@ -16,6 +16,9 @@
 
 package io.cdap.plugin.dlp;
 
+import com.google.api.gax.core.NoCredentialsProvider;
+import com.google.api.gax.grpc.GrpcTransportChannel;
+import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.api.gax.rpc.ResourceExhaustedException;
 import com.google.cloud.dlp.v2.DlpServiceClient;
 import com.google.cloud.dlp.v2.DlpServiceSettings;
@@ -44,6 +47,7 @@ import io.cdap.cdap.etl.api.TransformContext;
 import io.cdap.cdap.format.StructuredRecordStringConverter;
 import io.cdap.plugin.gcp.common.GCPConfig;
 import io.cdap.plugin.gcp.common.GCPUtils;
+import io.grpc.ManagedChannelBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -227,8 +231,31 @@ public final class SensitiveRecordFilter extends SplitterTransform<StructuredRec
    */
   private DlpServiceSettings getSettings() throws IOException {
     DlpServiceSettings.Builder builder = DlpServiceSettings.newBuilder();
-    if (config.getServiceAccountFilePath() != null) {
-      builder.setCredentialsProvider(() -> GCPUtils.loadServiceAccountCredentials(config.getServiceAccountFilePath()));
+    if (config.dlpOverrideEnabled) {
+      String target = config.dlpHost.trim() + ":" + config.dlpPort;
+      if (config.dlpTlsEnabled) {
+        builder.setTransportChannelProvider(
+            FixedTransportChannelProvider.create(
+                GrpcTransportChannel.create(
+                    ManagedChannelBuilder.forTarget(target)
+                        .useTransportSecurity()
+                        .build())));
+        builder.setCredentialsProvider(() ->
+            GCPUtils.loadServiceAccountCredentials(config.getServiceAccountFilePath()));
+      } else {
+        builder.setTransportChannelProvider(
+            FixedTransportChannelProvider.create(
+                GrpcTransportChannel.create(
+                    ManagedChannelBuilder.forTarget(target)
+                        .usePlaintext()
+                        .build())));
+        builder.setCredentialsProvider(NoCredentialsProvider.create());
+      }
+    } else {
+      if (config.getServiceAccountFilePath() != null) {
+        builder.setCredentialsProvider(
+            () -> GCPUtils.loadServiceAccountCredentials(config.getServiceAccountFilePath()));
+      }
     }
     return builder.build();
   }
@@ -240,6 +267,9 @@ public final class SensitiveRecordFilter extends SplitterTransform<StructuredRec
   public static class Config extends GCPConfig {
 
     public static final String FIELD = "field";
+    public static final String DLP_HOST = "dlp-host";
+    public static final String DLP_PORT = "dlp-port";
+    public static final String DLP_TLS_ENABLED = "dlp-tls-enabled";
 
     @Macro
     @Name("entire-record")
@@ -260,6 +290,30 @@ public final class SensitiveRecordFilter extends SplitterTransform<StructuredRec
     @Name("on-error")
     @Description("Error handling of record")
     private String onError;
+
+    @Macro
+    @Name("dlp-override-enabled")
+    @Description("Use custom DLP service endpoint")
+    private Boolean dlpOverrideEnabled;
+
+    @Macro
+    @Name(DLP_HOST)
+    @Nullable
+    @Description("DLP host, e.g. dlp.googleapis.com or dlp.local")
+    private String dlpHost;
+
+    @Macro
+    @Name(DLP_PORT)
+    @Nullable
+    @Description("DLP port number, between 0 and 65535")
+    private Integer dlpPort;
+
+    @Macro
+    @Name(DLP_TLS_ENABLED)
+    @Nullable
+    @Description("Enable send credentials if you are accessing the Cloud DLP API through a proxy "
+        + "however it is optional if you are using a local instance of DLP.")
+    private Boolean dlpTlsEnabled;
 
     /**
      * @return The name of field that needs to be inspected for sensitive data.
@@ -303,6 +357,30 @@ public final class SensitiveRecordFilter extends SplitterTransform<StructuredRec
                                  "Please check that the select field's schema matches those types")
               .withConfigProperty(FIELD);
           }
+        }
+      }
+
+      if (dlpOverrideEnabled) {
+        if (dlpHost == null || dlpHost.isEmpty()) {
+          collector.addFailure("Custom DLP endpoint is enabled, " +
+                  "but DLP host has not been specified.",
+              "Specify the DLP host.")
+              .withConfigProperty(DLP_HOST);
+        }
+        if (dlpPort == null) {
+          collector.addFailure("Custom DLP endpoint is enabled, " +
+                  "but DLP port has not been specified.",
+              "Specify the DLP port.")
+              .withConfigProperty(DLP_PORT);
+        } else if (dlpPort < 0 || dlpPort > 65535) {
+          collector.addFailure("Invalid port.",
+              "Change port to a number between 0 and 65535.")
+              .withConfigProperty(DLP_PORT);
+        }
+        if (dlpTlsEnabled == null) {
+          collector.addFailure("Custom DLP endpoint is enabled, " +
+              "but TLS encryption has not been specified.", "Specify the TLS encryption.")
+              .withConfigProperty(DLP_TLS_ENABLED);
         }
       }
     }
