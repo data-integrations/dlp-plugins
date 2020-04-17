@@ -20,7 +20,9 @@ import com.google.privacy.dlp.v2.PrimitiveTransformation;
 import io.cdap.cdap.api.data.schema.Schema;
 import io.cdap.cdap.etl.api.FailureCollector;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Interface for all DLP Transformations supported by the Redaction Plugin
@@ -51,4 +53,12 @@ public interface DlpTransformConfig {
    */
   List<Schema.Type> getSupportedTypes();
 
+  /**
+   * Returns the set of fields that are required for this transform to operate correctly
+   *
+   * @return HashSet of field names that are required
+   */
+  default Set<String> getRequiredFields() {
+    return new HashSet<>();
+  }
 }

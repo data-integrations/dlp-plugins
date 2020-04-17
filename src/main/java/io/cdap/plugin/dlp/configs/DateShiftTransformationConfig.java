@@ -82,7 +82,6 @@ public class DateShiftTransformationConfig implements DlpTransformConfig {
       collector.addFailure("Lower Bound cannot be greater than Upper Bound.", "")
         .withConfigElement(widgetName, gson.toJson(errorConfig));
     }
-
   }
 
   @Override

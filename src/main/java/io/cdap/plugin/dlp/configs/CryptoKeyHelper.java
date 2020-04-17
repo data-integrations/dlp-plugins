@@ -17,6 +17,7 @@
 package io.cdap.plugin.dlp.configs;
 
 import com.google.common.base.Strings;
+import com.google.common.io.BaseEncoding;
 import com.google.gson.Gson;
 import com.google.privacy.dlp.v2.CryptoKey;
 import com.google.privacy.dlp.v2.KmsWrappedCryptoKey;
@@ -26,6 +27,7 @@ import com.google.protobuf.ByteString;
 import io.cdap.cdap.etl.api.FailureCollector;
 
 import java.nio.charset.Charset;
+import java.util.Base64;
 import java.util.Random;
 
 
@@ -64,14 +66,14 @@ public class CryptoKeyHelper {
       case UNWRAPPED:
         cryptoKeyBuilder.setUnwrapped(
           UnwrappedCryptoKey.newBuilder()
-            .setKey(ByteString.copyFromUtf8(key))
+            .setKey(ByteString.copyFrom(Base64.getDecoder().decode(key)))
             .build());
         break;
       case KMS_WRAPPED:
         cryptoKeyBuilder.setKmsWrapped(
           KmsWrappedCryptoKey.newBuilder()
             .setCryptoKeyName(cryptoKeyName)
-            .setWrappedKey(ByteString.copyFromUtf8(wrappedKey))
+            .setWrappedKey(ByteString.copyFrom(Base64.getDecoder().decode(wrappedKey)))
             .build());
         break;
     }
@@ -97,10 +99,18 @@ public class CryptoKeyHelper {
           collector.addFailure("Key is a required field for this transform.", "Please provide a value.")
             .withConfigElement(widgetName, gson.toJson(errorConfig));
         } else {
-          if (!(key.length() == 16 || key.length() == 24 || key.length() == 32)) {
+          if (!BaseEncoding.base64().canDecode(key)) {
             errorConfig.setNestedTransformPropertyId("key");
-            collector.addFailure("Key must be 128/192/256 bit.", "Please provide a key of the correct length.")
-              .withConfigElement(widgetName, gson.toJson(errorConfig));
+            collector.addFailure("Key must be base64 encoded.",
+                                 "").withConfigElement(widgetName, gson.toJson(errorConfig));
+          } else {
+            byte[] decodedKey = Base64.getDecoder().decode(key);
+            if (!(decodedKey.length == 16 || decodedKey.length == 24 || decodedKey.length == 32)) {
+              errorConfig.setNestedTransformPropertyId("key");
+              collector.addFailure("Key must be 16/24/32 bytes long.",
+                                   "Please provide a key of the correct length.")
+                .withConfigElement(widgetName, gson.toJson(errorConfig));
+            }
           }
         }
         break;
@@ -119,5 +129,4 @@ public class CryptoKeyHelper {
         break;
     }
   }
-
 }
