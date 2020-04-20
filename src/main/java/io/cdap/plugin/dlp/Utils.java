@@ -16,7 +16,9 @@
 
 package io.cdap.plugin.dlp;
 
+import com.google.common.base.Strings;
 import com.google.privacy.dlp.v2.FieldId;
+import com.google.privacy.dlp.v2.RecordTransformations;
 import com.google.privacy.dlp.v2.Table;
 import com.google.privacy.dlp.v2.Value;
 import com.google.protobuf.Timestamp;
@@ -24,6 +26,9 @@ import com.google.type.Date;
 import com.google.type.TimeOfDay;
 import io.cdap.cdap.api.data.format.StructuredRecord;
 import io.cdap.cdap.api.data.schema.Schema;
+import io.cdap.cdap.etl.api.lineage.field.FieldOperation;
+import io.cdap.cdap.etl.api.lineage.field.FieldTransformOperation;
+import io.cdap.plugin.dlp.configs.DlpFieldTransformationConfig;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -32,7 +37,11 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -279,5 +288,110 @@ public final class Utils {
     }
     tableBuiler.addRows(rowBuilder.build());
     return tableBuiler.build();
+  }
+
+  /**
+   * Converts the internal plugin config representation to DLP {@link RecordTransformations} object
+   *
+   * @param config DLP transform plugin config
+   * @return DLP RecordTransformations object that contains the converted values
+   * @throws Exception if the config cannot be converted into RecordTransformations
+   */
+  protected static RecordTransformations constructRecordTransformationsFromConfig(DLPTransformPluginConfig config)
+    throws Exception {
+    RecordTransformations.Builder recordTransformationsBuilder = RecordTransformations.newBuilder();
+    List<DlpFieldTransformationConfig> transformationConfigs = config.parseTransformations();
+
+    recordTransformationsBuilder.addAllFieldTransformations(
+      transformationConfigs.stream()
+        .map(DlpFieldTransformationConfig::toFieldTransformation)
+        .collect(Collectors.toList())
+    );
+    return recordTransformationsBuilder.build();
+  }
+
+  /**
+   * Constructs the field operations list required for Field Level Lineage in DLP transform plugins (Redact and
+   * Decrypt)
+   *
+   * @param inputSchema The schema of records coming into the transform
+   * @param config      The DLP transform plugin config for the transform
+   * @return List of {@link FieldOperation} that contains the data for FLL
+   * @throws Exception if the config cannot be parsed to obtain the list of transformations
+   */
+  protected static List<FieldOperation> getFieldOperations(Schema inputSchema, DLPTransformPluginConfig config)
+    throws Exception {
+    return getFieldOperations(inputSchema, config, "");
+  }
+
+  /**
+   * Constructs the field operations list required for Field Level Lineage in DLP transform plugins (Redact and
+   * Decrypt)
+   *
+   * @param inputSchema         The schema of records coming into the transform
+   * @param config              The DLP transform plugin config for the transform
+   * @param transformNamePrefix String prefix to add to the transform names to differentiate between Redact and Decrypt
+   * @return List of {@link FieldOperation} that contains the data for FLL
+   * @throws Exception if the config cannot be parsed to obtain the list of transformations
+   */
+  protected static List<FieldOperation> getFieldOperations(Schema inputSchema, DLPTransformPluginConfig config,
+                                                           String transformNamePrefix) throws Exception {
+    if (!Strings.isNullOrEmpty(transformNamePrefix) && !transformNamePrefix.endsWith(" ")) {
+      transformNamePrefix += " ";
+    }
+
+    //Parse config into format 'FieldName': List<>(['transform','filter'])
+    HashMap<String, List<String[]>> fieldOperationsData = new HashMap<>();
+    for (DlpFieldTransformationConfig transformationConfig : config.parseTransformations()) {
+      for (String field : transformationConfig.getFields()) {
+        String filterName = String.join(", ", transformationConfig.getFilters())
+          .replace("NONE", String.format("Custom Template (%s)", config.templateId));
+
+        String transformName = transformNamePrefix + transformationConfig.getTransform();
+
+        if (!fieldOperationsData.containsKey(field)) {
+          fieldOperationsData.put(field, Collections.singletonList(new String[]{transformName, filterName}));
+        } else {
+          fieldOperationsData.get(field).add(new String[]{transformName, filterName});
+        }
+      }
+    }
+
+    for (Schema.Field field : inputSchema.getFields()) {
+      if (!fieldOperationsData.containsKey(field.getName())) {
+        fieldOperationsData.put(field.getName(), Collections.singletonList(new String[]{"Identity", ""}));
+      }
+    }
+
+    List<FieldOperation> fieldOperations = new ArrayList<>();
+    for (String fieldName : fieldOperationsData.keySet()) {
+      StringBuilder descriptionBuilder = new StringBuilder();
+      StringBuilder nameBuilder = new StringBuilder();
+      descriptionBuilder.append("Applied ");
+      boolean first = true;
+      for (String[] transformFilterPair : fieldOperationsData.get(fieldName)) {
+
+        String transformName = transformFilterPair[0];
+        String filterNames = transformFilterPair[1];
+
+        if (first) {
+          descriptionBuilder.append("        ");
+        }
+        descriptionBuilder.append(String.format("'%s' transform on contents ", transformName));
+        if (filterNames.length() > 0) {
+          descriptionBuilder.append(" matching ").append(filterNames);
+        }
+        descriptionBuilder.append(",\n");
+        nameBuilder.append(transformName).append(" ,");
+        first = false;
+      }
+      nameBuilder.deleteCharAt(nameBuilder.length() - 1);
+      descriptionBuilder.delete(descriptionBuilder.length() - 2, descriptionBuilder.length() - 1);
+      nameBuilder.append("on ").append(fieldName);
+      fieldOperations
+        .add(new FieldTransformOperation(nameBuilder.toString(), descriptionBuilder.toString(),
+                                         Collections.singletonList(fieldName), fieldName));
+    }
+    return fieldOperations;
   }
 }
