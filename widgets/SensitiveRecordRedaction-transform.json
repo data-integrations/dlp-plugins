@@ -335,7 +335,6 @@
                     }
                   }
                 ]
-
               },
               {
                 "label": "Format Preserving Encryption",
@@ -486,6 +485,144 @@
                       }
                     ]
                   },
+                  {
+                    "name": "transient key rules",
+                    "condition": {
+                      "property": "keyType",
+                      "operator": "equal to",
+                      "value": "TRANSIENT"
+                    },
+                    "show": [
+                      {
+                        "name": "name"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "unwrapped key rules",
+                    "condition": {
+                      "property": "keyType",
+                      "operator": "equal to",
+                      "value": "UNWRAPPED"
+                    },
+                    "show": [
+                      {
+                        "name": "key"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "kms wrapped key rules",
+                    "condition": {
+                      "property": "keyType",
+                      "operator": "equal to",
+                      "value": "KMS_WRAPPED"
+                    },
+                    "show": [
+                      {
+                        "name": "wrappedKey"
+                      },
+                      {
+                        "name": "cryptoKeyName"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "label": "Deterministic Encryption",
+                "name": "DETERMINISTIC_ENCRYPTION",
+                "supportedTypes": [
+                  "string"
+                ],
+                "options": [
+                  {
+                    "name": "keyType",
+                    "widget-type": "select",
+                    "label": "Crypto Key Type",
+                    "widget-attributes": {
+                      "description": "Type of key to use for the cryptographic hash.",
+                      "default": "TRANSIENT",
+                      "values": [
+                        {
+                          "value": "TRANSIENT",
+                          "label": "Transient"
+                        },
+                        {
+                          "value": "UNWRAPPED",
+                          "label": "Unwrapped Key"
+                        },
+                        {
+                          "value": "KMS_WRAPPED",
+                          "label": "KMS Wrapped Key"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "name",
+                    "widget-type": "textbox",
+                    "label": "Transient Key Name",
+                    "widget-attributes": {
+                      "macro": "true",
+                      "placeholder": "Transient key name",
+                      "description": "Optional name for transient key that will be generated"
+                    }
+                  },
+                  {
+                    "name": "key",
+                    "widget-type": "textbox",
+                    "label": "Unwrapped Key",
+                    "widget-attributes": {
+                      "macro": "true",
+                      "placeholder": "Unwrapped key",
+                      "description": "Base64 encoded key to be used for cryptographic hash. Key must be must be 16, 24 or 32 bytes long."
+                    }
+                  },
+                  {
+                    "name": "wrappedKey",
+                    "widget-type": "textbox",
+                    "label": "Wrapped Key",
+                    "widget-attributes": {
+                      "macro": "true",
+                      "placeholder": "Wrapped key",
+                      "description": "Wrapped key to be unwrapped using KMS key"
+                    }
+                  },
+                  {
+                    "name": "cryptoKeyName",
+                    "widget-type": "textbox",
+                    "label": "KMS Resource ID",
+                    "widget-attributes": {
+                      "macro": "true",
+                      "placeholder": "projects/.../locations/.../keyRings/.../cryptoKeys/...",
+                      "description": "Resource ID of the key stored in Key Management Service that will be used to unwrap the wrapped key. The key version should be removed from the resource ID, the primary version will be used."
+                    }
+                  },
+                  {
+                    "name": "surrogateInfoTypeName",
+                    "widget-type": "textbox",
+                    "label": "Surrogate Type Name",
+                    "widget-attributes": {
+                      "macro": "true",
+                      "placeholder": "Surrogate Type Name",
+                      "required": "true",
+                      "description": "The custom infoType name to annotate the surrogate with. This annotation will be applied to the surrogate by prefixing it with the name of the custom infoType followed by the number of characters comprising the surrogate."
+                    }
+                  },
+                  {
+                    "widget-type": "input-field-selector",
+                    "label": "Context",
+                    "name": "context",
+                    "widget-attributes": {
+                      "allowedTypes": [
+                        "string"
+                      ],
+                      "description": "(Optional) Provide additional field to be used as Context. If the primary value is the same but the Context field value is different then two different encrypted values will be generated."
+                    }
+                  }
+                ],
+                "filters": [
                   {
                     "name": "transient key rules",
                     "condition": {
