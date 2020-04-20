@@ -22,6 +22,7 @@ import com.google.cloud.dlp.v2.DlpServiceClient;
 import com.google.cloud.dlp.v2.DlpServiceSettings;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.privacy.dlp.v2.ContentItem;
+import com.google.privacy.dlp.v2.CryptoDeterministicConfig;
 import com.google.privacy.dlp.v2.CryptoReplaceFfxFpeConfig;
 import com.google.privacy.dlp.v2.CustomInfoType;
 import com.google.privacy.dlp.v2.DeidentifyConfig;
@@ -165,13 +166,23 @@ public class SensitiveRecordDecrypt extends Transform<StructuredRecord, Structur
       for (InfoTypeTransformations.InfoTypeTransformation infoTypeTransformation : fieldTransformation
         .getInfoTypeTransformations().getTransformationsList()) {
 
-        // Only CryptoReplaceFfxFpeConfig has a surrogate type so target that config, no other configs should be
-        // possible in this transform since they are not included in the widget json list of options
+        // Only CryptoReplaceFfxFpeConfig and CryptoDeterministicConfig have a surrogate type so target those configs,
+        // no other configs should be possible in this transform since they are not included in the widget json list
+        // of options
         CryptoReplaceFfxFpeConfig cryptoReplaceFfxFpeConfig = infoTypeTransformation.getPrimitiveTransformation()
           .getCryptoReplaceFfxFpeConfig();
-        if (cryptoReplaceFfxFpeConfig != null) {
+        if (cryptoReplaceFfxFpeConfig.hasCryptoKey()) {
           CustomInfoType customInfoType = CustomInfoType.newBuilder()
             .setInfoType(cryptoReplaceFfxFpeConfig.getSurrogateInfoType())
+            .setSurrogateType(CustomInfoType.SurrogateType.newBuilder().build()).build();
+          configBuilder.addCustomInfoTypes(customInfoType);
+        }
+
+        CryptoDeterministicConfig cryptoDeterministicConfig = infoTypeTransformation.getPrimitiveTransformation()
+          .getCryptoDeterministicConfig();
+        if (cryptoDeterministicConfig.hasCryptoKey()) {
+          CustomInfoType customInfoType = CustomInfoType.newBuilder()
+            .setInfoType(cryptoDeterministicConfig.getSurrogateInfoType())
             .setSurrogateType(CustomInfoType.SurrogateType.newBuilder().build()).build();
           configBuilder.addCustomInfoTypes(customInfoType);
         }
