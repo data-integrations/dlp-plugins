@@ -16,6 +16,7 @@
 
 package io.cdap.plugin.dlp;
 
+import com.google.api.gax.rpc.ApiException;
 import com.google.api.gax.rpc.ResourceExhaustedException;
 import com.google.cloud.dlp.v2.DlpServiceClient;
 import com.google.cloud.dlp.v2.DlpServiceSettings;
@@ -61,9 +62,12 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -86,6 +90,10 @@ public class SensitiveRecordRedaction extends Transform<StructuredRecord, Struct
 
   // DLP service client for managing interactions with DLP service.
   private DlpServiceClient client;
+
+  // Required fields that need to be sent to DLP for the transform to work, this variable is used to cache the set
+  // since it will not change during the execution of the plugin
+  private Set<String> requiredFields;
 
   @VisibleForTesting
   public SensitiveRecordRedaction(Config config) {
@@ -122,7 +130,6 @@ public class SensitiveRecordRedaction extends Transform<StructuredRecord, Struct
           client = DlpServiceClient.create(getSettings());
         }
         InspectTemplate template = client.getInspectTemplate(request);
-
       } catch (Exception e) {
         throw new IllegalArgumentException(
           "Unable to validate template name. Ensure template ID matches the specified ID in DLP");
@@ -140,8 +147,7 @@ public class SensitiveRecordRedaction extends Transform<StructuredRecord, Struct
     for (DlpFieldTransformationConfig transformationConfig : config.parseTransformations()) {
       for (String field : transformationConfig.getFields()) {
         String filterName = String.join(", ", transformationConfig.getFilters())
-          .replace("NONE",
-                   String.format("Custom Template (%s)", config.templateId));
+          .replace("NONE", String.format("Custom Template (%s)", config.templateId));
 
         String transformName = transformationConfig.getTransform();
 
@@ -181,7 +187,6 @@ public class SensitiveRecordRedaction extends Transform<StructuredRecord, Struct
         descriptionBuilder.append(",\n");
         nameBuilder.append(transformName).append(" ,");
         first = false;
-
       }
       nameBuilder.deleteCharAt(nameBuilder.length() - 1);
       descriptionBuilder.delete(descriptionBuilder.length() - 2, descriptionBuilder.length() - 1);
@@ -207,8 +212,12 @@ public class SensitiveRecordRedaction extends Transform<StructuredRecord, Struct
 
   @Override
   public void transform(StructuredRecord structuredRecord, Emitter<StructuredRecord> emitter) throws Exception {
+    if (requiredFields == null) {
+      requiredFields = config.getRequiredFields();
+    }
+
     RecordTransformations recordTransformations = constructRecordTransformations();
-    Table dlpTable = Utils.getTableFromStructuredRecord(structuredRecord);
+    Table dlpTable = Utils.getTableFromStructuredRecord(structuredRecord, requiredFields);
 
     DeidentifyConfig deidentifyConfig =
       DeidentifyConfig.newBuilder().setRecordTransformations(recordTransformations).build();
@@ -239,7 +248,7 @@ public class SensitiveRecordRedaction extends Transform<StructuredRecord, Struct
     try {
       metrics.count("dlp.requests.count", 1);
       response = client.deidentifyContent(request);
-    } catch (Exception e) {
+    } catch (ApiException e) {
       metrics.count("dlp.requests.fail", 1);
       if (e instanceof ResourceExhaustedException) {
         LOG.error(
@@ -254,7 +263,6 @@ public class SensitiveRecordRedaction extends Transform<StructuredRecord, Struct
     StructuredRecord resultRecord = Utils.getStructuredRecordFromTable(item1.getTable(), structuredRecord);
     emitter.emit(resultRecord);
   }
-
 
   /**
    * Configures the <code>DlpSettings</code> to use user specified service account file or auto-detect.
@@ -288,19 +296,37 @@ public class SensitiveRecordRedaction extends Transform<StructuredRecord, Struct
     @Macro
     @Nullable
     private String templateId;
-    private static final Gson gson = new GsonBuilder()
+
+    private static final Gson GSON = new GsonBuilder()
       .registerTypeAdapter(DlpFieldTransformationConfig.class, new DlpFieldTransformationConfigCodec())
       .create();
 
     public List<DlpFieldTransformationConfig> parseTransformations() throws Exception {
-      String[] values = gson.fromJson(fieldsToTransform, String[].class);
+      String[] values = GSON.fromJson(fieldsToTransform, String[].class);
       List<DlpFieldTransformationConfig> transformationConfigs = new ArrayList<>();
       for (String value : values) {
-        transformationConfigs.add(gson.fromJson(value, DlpFieldTransformationConfig.class));
+        transformationConfigs.add(GSON.fromJson(value, DlpFieldTransformationConfig.class));
       }
       return transformationConfigs;
     }
 
+    /**
+     * Get the set of fields that are being transformed or are required for transforms to work. This is used to limit
+     * the payload size to DLP endpoints, the transform will only send the values of the required fields.
+     *
+     * @return Set of field names
+     */
+    public Set<String> getRequiredFields() {
+      try {
+        return parseTransformations().stream()
+          .map(DlpFieldTransformationConfig::getRequiredFields)
+          .flatMap(Collection::stream)
+          .collect(Collectors.toSet());
+      } catch (Exception e) {
+        LOG.warn("Unable to get list of required fields, defaulting to an empty set.", e);
+        return new HashSet<>();
+      }
+    }
 
     public void validate(FailureCollector collector, Schema inputSchema) {
       if (customTemplateEnabled) {
@@ -325,7 +351,7 @@ public class SensitiveRecordRedaction extends Transform<StructuredRecord, Struct
               collector.addFailure(String.format("This transform depends on custom template that was not defined.",
                                                  config.getTransform(), String.join(", ", config.getFields())),
                                    "Enable the custom template option and provide the name of it.")
-                .withConfigElement(FIELDS_TO_TRANSFORM, gson.toJson(errorConfig));
+                .withConfigElement(FIELDS_TO_TRANSFORM, GSON.toJson(errorConfig));
             }
             //Validate the config for the transform
             config.validate(collector, inputSchema, FIELDS_TO_TRANSFORM);
@@ -340,7 +366,7 @@ public class SensitiveRecordRedaction extends Transform<StructuredRecord, Struct
                 collector.addFailure("Cannot use custom templates and built-in filters in the same plugin instance.",
                                      "All transforms must use custom templates or built-in filters, not a "
                                        + "combination of both.")
-                  .withConfigElement(FIELDS_TO_TRANSFORM, gson.toJson(errorConfig));
+                  .withConfigElement(FIELDS_TO_TRANSFORM, GSON.toJson(errorConfig));
               }
             }
 
@@ -363,13 +389,12 @@ public class SensitiveRecordRedaction extends Transform<StructuredRecord, Struct
                   }
                   errorConfig.setTransformPropertyId("");
                   collector.addFailure(errorMessage, "")
-                    .withConfigElement(FIELDS_TO_TRANSFORM, gson.toJson(errorConfig));
+                    .withConfigElement(FIELDS_TO_TRANSFORM, GSON.toJson(errorConfig));
                 } else {
                   transforms.put(transformKey, config.getTransform());
                 }
               }
             }
-
           }
 
           // If the user has a custom template enabled but doesnt use it in any of the transforms

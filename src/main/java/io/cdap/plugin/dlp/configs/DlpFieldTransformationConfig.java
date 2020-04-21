@@ -28,7 +28,9 @@ import io.cdap.plugin.dlp.SensitiveDataMapping;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -82,7 +84,6 @@ public final class DlpFieldTransformationConfig {
     }
 
     return fieldTransformationBuilder.build();
-
   }
 
   /**
@@ -171,11 +172,16 @@ public final class DlpFieldTransformationConfig {
         filter = Arrays.stream(filter.toLowerCase().split(" ")).map(s -> s.toUpperCase().charAt(0) + s.substring(1))
           .collect(
             Collectors.joining(" "));
-
       }
       names.add(filter);
     }
     return names;
+  }
+
+  public Set<String> getRequiredFields() {
+    HashSet<String> results = new HashSet<>(Arrays.asList(fields));
+    results.addAll(transformProperties.getRequiredFields());
+    return results;
   }
 }
 

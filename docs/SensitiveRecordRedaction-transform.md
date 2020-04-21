@@ -29,6 +29,7 @@ transformations:
 * **[One-way Hash](https://cloud.google.com/dlp/docs/transformations-reference#crypto-hashing)**: Apply a one-way cryptographic hash function to the data (supported types: `all`)
 * **[Redact](https://cloud.google.com/dlp/docs/transformations-reference#redaction)**: Remove sensitive text from the record (supported types: `string`)
 * **[Replace with value](https://cloud.google.com/dlp/docs/reference/rest/v2/organizations.deidentifyTemplates#DeidentifyTemplate.ReplaceValueConfig)**: Replace sensitive text with a new value (supported types: `string`)
+* **[Format Preserving Encryption](https://cloud.google.com/dlp/docs/reference/rest/v2/organizations.deidentifyTemplates#cryptoreplaceffxfpeconfig)**: Replaces sensitive text with an format-preserving encrypted value. The value can be decrypted using the Decrypt Plugin (supported types: `string`)  
 
 DLP Filter Mapping
 -----------

@@ -32,7 +32,10 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 /**
  * Helper class for converting to DLP data types
@@ -172,18 +175,34 @@ public final class Utils {
   }
 
   /**
-   * Creates a DLP Table from a StructuredRecord
+   * Creates a DLP Table using the all fields from the given StructuredRecord
    *
    * @param record StructuredRecord to convert to Table
    * @return Table with one row containing the data from {@code record}
    * @throws Exception when record contains unexpected type or type-casting fails due to invalid values
    */
   public static Table getTableFromStructuredRecord(StructuredRecord record) throws Exception {
+    return getTableFromStructuredRecord(record, null);
+  }
+
+  /**
+   * Creates a DLP Table using the required fields from StructuredRecord
+   *
+   * @param record         StructuredRecord to convert to Table
+   * @param requiredFields Set of fields to include in the conversion, pass empty set to include all fields
+   * @return Table with one row containing the data from {@code record}
+   * @throws Exception when record contains unexpected type or type-casting fails due to invalid values
+   */
+  public static Table getTableFromStructuredRecord(StructuredRecord record, @Nullable Set<String> requiredFields)
+    throws Exception {
     Table.Builder tableBuiler = Table.newBuilder();
     Table.Row.Builder rowBuilder = Table.Row.newBuilder();
 
     for (Schema.Field field : record.getSchema().getFields()) {
       String fieldName = field.getName();
+      if (requiredFields != null && requiredFields.size() > 0 && !requiredFields.contains(fieldName)) {
+        continue;
+      }
       Object fieldValue = record.get(fieldName);
       if (fieldValue == null) {
         continue;
@@ -261,5 +280,4 @@ public final class Utils {
     tableBuiler.addRows(rowBuilder.build());
     return tableBuiler.build();
   }
-
 }
