@@ -38,6 +38,7 @@ public class DlpFieldTransformationConfigCodec implements JsonDeserializer<DlpFi
     put("CRYPTO_HASH", CryptoHashTransformationConfig.class);
     put("DATE_SHIFT", DateShiftTransformationConfig.class);
     put("FORMAT_PRESERVING_ENCRYPTION", CryptoReplaceFfxFpeTransformationConfig.class);
+    put("DETERMINISTIC_ENCRYPTION", CryptoDeterministicTransformationConfig.class);
   }};
 
   @Override
