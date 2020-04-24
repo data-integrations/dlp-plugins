@@ -150,6 +150,12 @@ public class SensitiveRecordDecrypt extends Transform<StructuredRecord, Structur
     RecordTransformations recordTransformations = Utils.constructRecordTransformationsFromConfig(config);
     Table dlpTable = Utils.getTableFromStructuredRecord(structuredRecord, requiredFields);
 
+    // If the table has no headers that mean the row is null or the required values are null
+    if (dlpTable.getHeadersCount() == 0) {
+      emitter.emit(structuredRecord);
+      return;
+    }
+
     DeidentifyConfig deidentifyConfig =
       DeidentifyConfig.newBuilder().setRecordTransformations(recordTransformations).build();
 
