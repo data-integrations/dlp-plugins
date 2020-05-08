@@ -47,6 +47,10 @@
                 "label": "Custom Template"
               },
               {
+                "id": "ALL",
+                "label": "Everything"
+              },
+              {
                 "id": "DEMOGRAPHIC",
                 "label": "Demographics"
               },

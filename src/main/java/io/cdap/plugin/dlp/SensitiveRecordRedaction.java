@@ -17,6 +17,7 @@
 package io.cdap.plugin.dlp;
 
 import com.google.api.gax.rpc.ApiException;
+import com.google.api.gax.rpc.CancelledException;
 import com.google.api.gax.rpc.ResourceExhaustedException;
 import com.google.cloud.dlp.v2.DlpServiceClient;
 import com.google.cloud.dlp.v2.DlpServiceSettings;
@@ -56,6 +57,7 @@ import io.cdap.plugin.dlp.configs.DlpFieldTransformationConfigCodec;
 import io.cdap.plugin.dlp.configs.ErrorConfig;
 import io.cdap.plugin.gcp.common.GCPConfig;
 import io.cdap.plugin.gcp.common.GCPUtils;
+import io.grpc.StatusRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,6 +129,10 @@ public class SensitiveRecordRedaction extends Transform<StructuredRecord, Struct
     super.prepareRun(context);
     config.validate(context.getFailureCollector(), context.getInputSchema());
     context.getFailureCollector().getOrThrowException();
+
+    List<FieldOperation> fieldOperations = Utils.getFieldOperations(context.getInputSchema(), config);
+    context.record(fieldOperations);
+
     if (config.customTemplateEnabled) {
       String templateName = String.format("projects/%s/inspectTemplates/%s", config.getProject(), config.templateId);
       GetInspectTemplateRequest request = GetInspectTemplateRequest.newBuilder().setName(templateName).build();
@@ -136,14 +142,22 @@ public class SensitiveRecordRedaction extends Transform<StructuredRecord, Struct
           client = DlpServiceClient.create(getSettings());
         }
         InspectTemplate template = client.getInspectTemplate(request);
-      } catch (Exception e) {
+      } catch (CancelledException e) {
+        Throwable maybeStatusRuntimeException = e.getCause();
+        if (maybeStatusRuntimeException instanceof StatusRuntimeException) {
+          Throwable maybeNoSuchMethodError = maybeStatusRuntimeException.getCause();
+          if (maybeNoSuchMethodError instanceof NoSuchMethodError) {
+            // Swallowing class conflict exception in getInspectTemplate, because it has no
+            // impact on further processing - we only download template to see it exists.
+            return;
+          }
+        }
         throw new IllegalArgumentException(
           "Unable to validate template name. Ensure template ID matches the specified ID in DLP");
+      } catch (Exception e) {
+        throw e;
       }
     }
-
-    List<FieldOperation> fieldOperations = Utils.getFieldOperations(context.getInputSchema(), config);
-    context.record(fieldOperations);
   }
 
   @Override
