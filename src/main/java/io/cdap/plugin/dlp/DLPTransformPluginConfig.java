@@ -88,7 +88,7 @@ public class DLPTransformPluginConfig extends GCPConfig {
       }
     }
 
-    if (fieldsToTransform != null) {
+    if (fieldsToTransform != null && !containsMacro(FIELDS_TO_TRANSFORM)) {
       try {
         List<DlpFieldTransformationConfig> transformationConfigs = parseTransformations();
         HashMap<String, String> transforms = new HashMap<>();
