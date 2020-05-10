@@ -66,7 +66,7 @@ public final class DlpFieldTransformationConfig {
       Arrays.stream(fields).map(field -> FieldId.newBuilder().setName(field).build()).collect(Collectors.toList())
     );
 
-    if (fields.length == 0 || "NONE".equals(fields[0])) {
+    if (Arrays.asList(filters).contains("ALL")) {
       fieldTransformationBuilder.setPrimitiveTransformation(transformProperties.toPrimitiveTransform());
     } else {
 
