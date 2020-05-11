@@ -36,6 +36,7 @@ DLP Filter Mapping
 This plugin supports most pre-defined DLP filters, they are grouped into boarder
 categories for ease of use. The contents of each group are as follows:
 
+* **Everything**: Applies transformation to the entire field, no inspection or filtering is applied
 * **Demographic**: PERSON_NAME, AGE, DATE_OF_BIRTH, PHONE_NUMBER, ETHNIC_GROUP
 * **Location**: LOCATION, MAC_ADDRESS, MAC_ADDRESS_LOCAL
 * **Tax IDs**: AUSTRALIA_TAX_FILE_NUMBER, DENMARK_CPR_NUMBER, NORWAY_NI_NUMBER, PORTUGAL_CDC_NUMBER, US_ADOPTION_TAXPAYER_IDENTIFICATION_NUMBER, US_EMPLOYER_IDENTIFICATION_NUMBER,US_PREPARER_TAXPAYER_IDENTIFICATION_NUMBER
