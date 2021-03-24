@@ -136,7 +136,7 @@ public class SensitiveRecordDecrypt extends Transform<StructuredRecord, Structur
         throw new IllegalArgumentException(
           "Unable to validate template name. Ensure template ID matches the specified ID in DLP. List of defined " +
             "templates can be found at " +
-            "https://console.cloud.google.com//security/dlp/landing/configuration/templates/inspect");
+            "https://console.cloud.google.com/security/dlp/landing/configuration/templates/inspect");
       }
     }
 
