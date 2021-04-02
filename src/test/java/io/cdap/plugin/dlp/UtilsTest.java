@@ -6,6 +6,8 @@ import com.google.privacy.dlp.v2.Value;
 import io.cdap.cdap.api.data.format.StructuredRecord;
 import io.cdap.cdap.api.data.schema.Schema;
 import io.cdap.cdap.api.data.schema.Schema.LogicalType;
+import io.cdap.cdap.etl.api.validation.ValidationException;
+import io.cdap.cdap.etl.mock.validation.MockFailureCollector;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,5 +66,49 @@ public class UtilsTest {
   public void testTableFromStructuredRecord() throws Exception {
     Table table = Utils.getTableFromStructuredRecord(recordBuilder.build());
     Assert.assertEquals(table, tableBuilder.build());
+  }
+
+  @Test
+  public void testEmptyCustomTemplate() {
+    DLPTransformPluginConfig config = new DLPTransformPluginConfig();
+    config.customTemplateEnabled = true;
+    config.templateId = null;
+    MockFailureCollector collector = new MockFailureCollector("customTemplateEnabledAndEmpty");
+    config.validate(collector, null);
+    Assert.assertEquals(1, collector.getValidationFailures().size());
+    Assert.assertEquals("templateId",
+                        collector.getValidationFailures().get(0).getCauses().get(0).getAttribute("stageConfig"));
+    Assert.assertEquals("customTemplatePath",
+                        collector.getValidationFailures().get(0).getCauses().get(1).getAttribute("stageConfig"));
+    Assert.assertEquals("Custom template fields are not specified.",
+                        collector.getValidationFailures().get(0).getMessage());
+  }
+
+  @Test
+  public void testCustomTemplateEnabled() {
+    DLPTransformPluginConfig config = new DLPTransformPluginConfig();
+    config.customTemplateEnabled = true;
+    config.customTemplatePath = "simple_template";
+    MockFailureCollector collector = new MockFailureCollector("customTemplateEnabled");
+    config.validate(collector, null);
+    Assert.assertEquals(0, collector.getValidationFailures().size());
+  }
+
+  @Test
+  public void testBothCustomTemplateEnabled() {
+    DLPTransformPluginConfig config = new DLPTransformPluginConfig();
+    config.customTemplateEnabled = true;
+    config.templateId = "template";
+    config.customTemplatePath = "anotherTemplate";
+    MockFailureCollector collector = new MockFailureCollector("BothCustomTemplateEnabled");
+    config.validate(collector, null);
+    Assert.assertEquals(1, collector.getValidationFailures().size());
+    Assert.assertEquals("templateId",
+                        collector.getValidationFailures().get(0).getCauses().get(0).getAttribute("stageConfig"));
+    Assert.assertEquals("customTemplatePath",
+                        collector.getValidationFailures().get(0).getCauses().get(1).getAttribute("stageConfig"));
+    Assert.assertEquals("Both template id and template path are specified.",
+                        collector.getValidationFailures().get(0).getMessage());
+
   }
 }

@@ -22,6 +22,7 @@ import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.api.gax.rpc.ResourceExhaustedException;
 import com.google.cloud.dlp.v2.DlpServiceClient;
 import com.google.cloud.dlp.v2.DlpServiceSettings;
+import com.google.common.base.Strings;
 import com.google.privacy.dlp.v2.ContentItem;
 import com.google.privacy.dlp.v2.GetInspectTemplateRequest;
 import com.google.privacy.dlp.v2.InspectContentRequest;
@@ -136,7 +137,7 @@ public final class SensitiveRecordFilter extends SplitterTransform<StructuredRec
   public void prepareRun(StageSubmitterContext context) throws Exception {
     super.prepareRun(context);
 
-    String templateName = String.format("projects/%s/inspectTemplates/%s", config.getProject(), config.templateId);
+    String templateName = config.getCustomTemplate();
     GetInspectTemplateRequest request = GetInspectTemplateRequest.newBuilder().setName(templateName).build();
 
     try {
@@ -170,7 +171,7 @@ public final class SensitiveRecordFilter extends SplitterTransform<StructuredRec
       // depending on input schema field object
       contentItem = ContentItem.newBuilder().setValue(recordString).build();
 
-      String templateName = String.format("projects/%s/inspectTemplates/%s", config.getProject(), config.templateId);
+      String templateName = config.getCustomTemplate();
 
       InspectContentRequest request =
         InspectContentRequest.newBuilder()
@@ -270,11 +271,18 @@ public final class SensitiveRecordFilter extends SplitterTransform<StructuredRec
     public static final String DLP_HOST = "dlp-host";
     public static final String DLP_PORT = "dlp-port";
     public static final String DLP_TLS_ENABLED = "dlp-tls-enabled";
+    public static final String CUSTOM_TEMPLATE_PATH_NAME = "customTemplatePath";
+    public static final String TEMPLATE_ID_NAME = "template-id";
+    public static final String CUSTOM_TEMPLATE_ENABLED_NAME = "customTemplateEnabled";
 
     @Macro
     @Name("entire-record")
     @Description("Check full record or a field")
     private Boolean entireRecord;
+
+    @Description("Enabling this option will allow you to define a custom DLP Inspection Template to use for matching "
+      + "during the transform.")
+    protected Boolean customTemplateEnabled;
 
     @Macro
     @Name(FIELD)
@@ -282,9 +290,17 @@ public final class SensitiveRecordFilter extends SplitterTransform<StructuredRec
     @Nullable
     private String field;
 
+    @Macro
     @Name("template-id")
     @Description("ID of the Inspection Template defined in DLP")
+    @Nullable
     private String templateId;
+
+    @Macro
+    @Name("customTemplatePath")
+    @Description("Custom path of the DLP Inspection template")
+    @Nullable
+    private String customTemplatePath;
 
     @Macro
     @Name("on-error")
@@ -334,8 +350,31 @@ public final class SensitiveRecordFilter extends SplitterTransform<StructuredRec
       return 1;
     }
 
+    /**
+     * Gets the custom template specified by user which can be either a templateId or a full custom template path
+     *
+     * @return String of templateId or custom template path
+     */
+    public String getCustomTemplate() {
+      return Strings.isNullOrEmpty(templateId) ? customTemplatePath :
+        String.format("projects/%s/inspectTemplates/%s", getProject(), templateId);
+    }
 
     public void validate(FailureCollector collector, Schema inputSchema) {
+      if (customTemplateEnabled) {
+        if (!containsMacro(TEMPLATE_ID_NAME) && !containsMacro(CUSTOM_TEMPLATE_PATH_NAME) &&
+          Strings.isNullOrEmpty(templateId) && Strings.isNullOrEmpty(customTemplatePath)) {
+          collector.addFailure("Custom template fields are not specified.",
+                               "Must specify one of template id or template path")
+            .withConfigProperty(TEMPLATE_ID_NAME).withConfigProperty(CUSTOM_TEMPLATE_PATH_NAME);
+        }
+        if (!containsMacro(TEMPLATE_ID_NAME) && !containsMacro(CUSTOM_TEMPLATE_PATH_NAME) &&
+          !Strings.isNullOrEmpty(templateId) && !Strings.isNullOrEmpty(customTemplatePath)) {
+          collector.addFailure("Both template id and template path are specified.",
+                               "Must specify only one of template id or template path")
+            .withConfigProperty(TEMPLATE_ID_NAME).withConfigProperty(CUSTOM_TEMPLATE_PATH_NAME);
+        }
+      }
       if (!containsMacro("entire-record") && !entireRecord && getFieldName() == null) {
         collector.addFailure("Input type is specified as 'Field', " +
                                "but a field name has not been specified.", "Specify the field name.")

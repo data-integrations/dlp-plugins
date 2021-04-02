@@ -30,6 +30,14 @@
           "widget-attributes": {
             "placeholder": "Template ID"
           }
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Custom Template Path",
+          "name": "customTemplatePath",
+          "widget-attributes": {
+            "placeholder": "Custom Template Path"
+          }
         }
       ]
     },
@@ -468,6 +476,9 @@
       "show": [
         {
           "name": "templateId"
+        },
+        {
+          "name" : "customTemplatePath"
         }
       ]
     }

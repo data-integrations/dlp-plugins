@@ -52,3 +52,7 @@ This plugin records three metrics:
 * `dlp.requests.count`: Total number of requests sent to Data Loss Prevention API
 * `dlp.requests.success`: Number of requests that were successfully processed by Data Loss Prevention API
 * `dlp.requests.fail`: Number of requests that failed
+
+Custom Template Path
+-----------
+The option to use a custom template path which is located in a different project other than the one specified in Project Id.
