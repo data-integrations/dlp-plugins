@@ -58,11 +58,35 @@
       "label": "Inspection Template",
       "properties": [
         {
+          "widget-type": "toggle",
+          "name": "customTemplateEnabled",
+          "label": "Use custom template",
+          "widget-attributes": {
+            "default": "false",
+            "on": {
+              "value": "true",
+              "label": "Yes"
+            },
+            "off": {
+              "value": "false",
+              "label": "No"
+            }
+          }
+        },
+        {
           "name": "template-id",
           "widget-type": "textbox",
           "label": "Template ID",
           "widget-attributes": {
             "placeholder": "Inspection Template ID"
+          }
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Custom Template Path",
+          "name": "customTemplatePath",
+          "widget-attributes": {
+            "placeholder": "Custom Template Path"
           }
         }
       ]
@@ -197,6 +221,19 @@
         },
         {
           "name": "dlp-tls-enabled"
+        }
+      ]
+    },
+    {
+      "name": "Filter for simple condition objects - 1",
+      "condition": {
+        "property": "customTemplateEnabled",
+        "operator": "equal to",
+        "value": "true"
+      },
+      "show": [
+        {
+          "name" : "customTemplatePath"
         }
       ]
     }

@@ -124,7 +124,7 @@ public class SensitiveRecordDecrypt extends Transform<StructuredRecord, Structur
     config.validate(context.getFailureCollector(), context.getInputSchema());
     context.getFailureCollector().getOrThrowException();
     if (config.customTemplateEnabled) {
-      String templateName = String.format("projects/%s/inspectTemplates/%s", config.getProject(), config.templateId);
+      String templateName = config.getCustomTemplate();
       GetInspectTemplateRequest request = GetInspectTemplateRequest.newBuilder().setName(templateName).build();
 
       try {

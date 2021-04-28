@@ -16,6 +16,7 @@
 
 package io.cdap.plugin.dlp;
 
+import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.cdap.cdap.api.annotation.Description;
@@ -31,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -42,6 +42,9 @@ import javax.annotation.Nullable;
  */
 public class DLPTransformPluginConfig extends GCPConfig {
   public static final String FIELDS_TO_TRANSFORM = "fieldsToTransform";
+  public static final String CUSTOM_TEMPLATE_PATH_NAME = "customTemplatePath";
+  public static final String TEMPLATE_ID_NAME = "templateId";
+  public static final String CUSTOM_TEMPLATE_ENABLED_NAME = "customTemplateEnabled";
   @Macro
   protected String fieldsToTransform;
 
@@ -53,6 +56,11 @@ public class DLPTransformPluginConfig extends GCPConfig {
   @Macro
   @Nullable
   protected String templateId;
+
+  @Description("Custom path of the DLP Inspection template")
+  @Macro
+  @Nullable
+  protected String customTemplatePath;
 
   private static final Gson GSON = new GsonBuilder()
     .registerTypeAdapter(DlpFieldTransformationConfig.class, new DlpFieldTransformationConfigCodec())
@@ -79,12 +87,28 @@ public class DLPTransformPluginConfig extends GCPConfig {
       .flatMap(Collection::stream)
       .collect(Collectors.toSet());
   }
+  /**
+   * Gets the custom template specified by user which can be either a templateId or a full custom template path
+   * @return String of templateId or custom template path
+   */
+  public String getCustomTemplate() {
+    return Strings.isNullOrEmpty(templateId) ? customTemplatePath :
+      String.format("projects/%s/inspectTemplates/%s", getProject(), templateId);
+  }
 
   public void validate(FailureCollector collector, Schema inputSchema) {
     if (customTemplateEnabled) {
-      if (!containsMacro("templateId") && templateId == null) {
-        collector.addFailure("Must specify template ID in order to use custom template", "")
-          .withConfigProperty("templateId");
+      if (!containsMacro(TEMPLATE_ID_NAME) && !containsMacro(CUSTOM_TEMPLATE_PATH_NAME) &&
+        Strings.isNullOrEmpty(templateId) && Strings.isNullOrEmpty(customTemplatePath)) {
+        collector.addFailure("Custom template fields are not specified.",
+                             "Must specify one of template id or template path")
+          .withConfigProperty(TEMPLATE_ID_NAME).withConfigProperty(CUSTOM_TEMPLATE_PATH_NAME);
+      }
+      if (!containsMacro(TEMPLATE_ID_NAME) && !containsMacro(CUSTOM_TEMPLATE_PATH_NAME) &&
+        !Strings.isNullOrEmpty(templateId) && !Strings.isNullOrEmpty(customTemplatePath)) {
+        collector.addFailure("Both template id and template path are specified.",
+                             "Must specify only one of template id or template path")
+          .withConfigProperty(TEMPLATE_ID_NAME).withConfigProperty(CUSTOM_TEMPLATE_PATH_NAME);
       }
     }
 
