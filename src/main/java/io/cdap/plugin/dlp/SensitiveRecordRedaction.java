@@ -134,7 +134,7 @@ public class SensitiveRecordRedaction extends Transform<StructuredRecord, Struct
     context.record(fieldOperations);
 
     if (config.customTemplateEnabled) {
-      String templateName = String.format("projects/%s/inspectTemplates/%s", config.getProject(), config.templateId);
+      String templateName = config.getCustomTemplate();
       GetInspectTemplateRequest request = GetInspectTemplateRequest.newBuilder().setName(templateName).build();
 
       try {
@@ -181,7 +181,7 @@ public class SensitiveRecordRedaction extends Transform<StructuredRecord, Struct
       .setDeidentifyConfig(deidentifyConfig)
       .setItem(item);
     if (config.customTemplateEnabled) {
-      String templateName = String.format("projects/%s/inspectTemplates/%s", config.getProject(), config.templateId);
+      String templateName = config.getCustomTemplate();
       requestBuilder.setInspectTemplateName(templateName);
     } else {
       InspectConfig.Builder configBuilder = InspectConfig.newBuilder();
