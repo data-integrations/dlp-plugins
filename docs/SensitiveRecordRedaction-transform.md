@@ -1,4 +1,4 @@
-# Cloud Data Loss Prevention (DLP) Redact
+# Google Cloud Data Loss Prevention (DLP) Redact
 
 Additional Charges
 -----------

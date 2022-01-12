@@ -2,7 +2,7 @@
   "metadata": {
     "spec-version": "1.0"
   },
-  "display-name": "Redact",
+  "display-name": "Google DLP Redact",
   "configuration-groups": [
     {
       "label": "Custom Template",
