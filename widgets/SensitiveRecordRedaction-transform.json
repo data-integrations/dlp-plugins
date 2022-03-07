@@ -42,6 +42,19 @@
       ]
     },
     {
+      "label": "Location",
+      "properties": [
+        {
+          "widget-type": "text",
+          "name": "dlpLocation",
+          "label": "Resource Location",
+          "widget-attributes": {
+            "default": "global"
+          }
+        }
+      ]
+    },
+    {
       "label": "Matching",
       "properties": [
         {

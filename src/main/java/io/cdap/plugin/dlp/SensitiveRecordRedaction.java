@@ -157,7 +157,7 @@ public class SensitiveRecordRedaction extends Transform<StructuredRecord, Struct
     ContentItem item = ContentItem.newBuilder().setTable(dlpTable).build();
     DeidentifyContentRequest.Builder requestBuilder = DeidentifyContentRequest.newBuilder()
       .setParent(
-        "projects/" + config.getProject())
+        "projects/" + config.getProject() + "/locations/" + config.getDlpLocation())
       .setDeidentifyConfig(deidentifyConfig)
       .setItem(item);
     if (config.customTemplateEnabled) {

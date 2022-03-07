@@ -73,6 +73,7 @@ public class UtilsTest {
     DLPTransformPluginConfig config = new DLPTransformPluginConfig();
     config.customTemplateEnabled = true;
     config.templateId = null;
+    config.dlpLocation = "global";
     MockFailureCollector collector = new MockFailureCollector("customTemplateEnabledAndEmpty");
     config.validate(collector, null);
     Assert.assertEquals(1, collector.getValidationFailures().size());
@@ -89,6 +90,7 @@ public class UtilsTest {
     DLPTransformPluginConfig config = new DLPTransformPluginConfig();
     config.customTemplateEnabled = true;
     config.customTemplatePath = "simple_template";
+    config.dlpLocation = "global";
     MockFailureCollector collector = new MockFailureCollector("customTemplateEnabled");
     config.validate(collector, null);
     Assert.assertEquals(0, collector.getValidationFailures().size());
@@ -100,6 +102,7 @@ public class UtilsTest {
     config.customTemplateEnabled = true;
     config.templateId = "template";
     config.customTemplatePath = "anotherTemplate";
+    config.dlpLocation = "global";
     MockFailureCollector collector = new MockFailureCollector("BothCustomTemplateEnabled");
     config.validate(collector, null);
     Assert.assertEquals(1, collector.getValidationFailures().size());
@@ -110,5 +113,32 @@ public class UtilsTest {
     Assert.assertEquals("Both template id and template path are specified.",
                         collector.getValidationFailures().get(0).getMessage());
 
+  }
+
+  @Test
+  public void testEmptyDlpLocation() {
+    DLPTransformPluginConfig config = new DLPTransformPluginConfig();
+    config.customTemplateEnabled = false;
+    config.dlpLocation = "";
+    MockFailureCollector collector = new MockFailureCollector("DlpLocation");
+    config.validate(collector, null);
+    Assert.assertEquals(1, collector.getValidationFailures().size());
+    Assert.assertEquals("dlpLocation",
+                        collector.getValidationFailures().get(0).getCauses().get(0).getAttribute("stageConfig"));
+    Assert.assertEquals("Resource Location is not specified.",
+                        collector.getValidationFailures().get(0).getMessage());
+  }
+
+  @Test
+  public void testNullDlpLocation() {
+    DLPTransformPluginConfig config = new DLPTransformPluginConfig();
+    config.customTemplateEnabled = false;
+    MockFailureCollector collector = new MockFailureCollector("DlpLocation");
+    config.validate(collector, null);
+    Assert.assertEquals(1, collector.getValidationFailures().size());
+    Assert.assertEquals("dlpLocation",
+                        collector.getValidationFailures().get(0).getCauses().get(0).getAttribute("stageConfig"));
+    Assert.assertEquals("Resource Location is not specified.",
+                        collector.getValidationFailures().get(0).getMessage());
   }
 }

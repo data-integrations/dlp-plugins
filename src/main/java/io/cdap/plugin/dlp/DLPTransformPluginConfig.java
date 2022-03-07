@@ -21,6 +21,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.cdap.cdap.api.annotation.Description;
 import io.cdap.cdap.api.annotation.Macro;
+import io.cdap.cdap.api.annotation.Name;
 import io.cdap.cdap.api.data.schema.Schema;
 import io.cdap.cdap.etl.api.FailureCollector;
 import io.cdap.plugin.dlp.configs.DlpFieldTransformationConfig;
@@ -45,6 +46,7 @@ public class DLPTransformPluginConfig extends GCPConfig {
   public static final String CUSTOM_TEMPLATE_PATH_NAME = "customTemplatePath";
   public static final String TEMPLATE_ID_NAME = "templateId";
   public static final String CUSTOM_TEMPLATE_ENABLED_NAME = "customTemplateEnabled";
+  public static final String DLP_LOCATION = "dlpLocation";
   @Macro
   protected String fieldsToTransform;
 
@@ -61,6 +63,13 @@ public class DLPTransformPluginConfig extends GCPConfig {
   @Macro
   @Nullable
   protected String customTemplatePath;
+
+  @Name(DLP_LOCATION)
+  @Description("Resource location of DLP Service (if KMS Wrapped Key is used, should be set to the same location"
+      + " as KMS Resource location)")
+  @Macro
+  @Nullable
+  protected String dlpLocation;
 
   private static final Gson GSON = new GsonBuilder()
     .registerTypeAdapter(DlpFieldTransformationConfig.class, new DlpFieldTransformationConfigCodec())
@@ -110,6 +119,11 @@ public class DLPTransformPluginConfig extends GCPConfig {
                              "Must specify only one of template id or template path")
           .withConfigProperty(TEMPLATE_ID_NAME).withConfigProperty(CUSTOM_TEMPLATE_PATH_NAME);
       }
+    }
+
+    if (Strings.isNullOrEmpty(dlpLocation)) {
+      collector.addFailure("Resource Location is not specified.", "Must specify Resource Location.")
+          .withConfigProperty(DLP_LOCATION);
     }
 
     if (fieldsToTransform != null) {
@@ -185,5 +199,9 @@ public class DLPTransformPluginConfig extends GCPConfig {
           .withConfigProperty(FIELDS_TO_TRANSFORM);
       }
     }
+  }
+
+  public String getDlpLocation() {
+    return dlpLocation;
   }
 }
