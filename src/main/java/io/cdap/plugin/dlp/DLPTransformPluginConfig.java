@@ -65,8 +65,8 @@ public class DLPTransformPluginConfig extends GCPConfig {
   protected String customTemplatePath;
 
   @Name(DLP_LOCATION)
-  @Description("Resource location of DLP Service (if KMS Wrapped Key is used, should be set to the same location"
-      + " as KMS Resource location)")
+  @Description("Resource location of DLP Service "
+      + "(for more info: https://cloud.google.com/dlp/docs/specifying-location)")
   @Macro
   @Nullable
   protected String dlpLocation;
@@ -119,11 +119,6 @@ public class DLPTransformPluginConfig extends GCPConfig {
                              "Must specify only one of template id or template path")
           .withConfigProperty(TEMPLATE_ID_NAME).withConfigProperty(CUSTOM_TEMPLATE_PATH_NAME);
       }
-    }
-
-    if (Strings.isNullOrEmpty(dlpLocation)) {
-      collector.addFailure("Resource Location is not specified.", "Must specify Resource Location.")
-          .withConfigProperty(DLP_LOCATION);
     }
 
     if (fieldsToTransform != null) {
@@ -203,5 +198,13 @@ public class DLPTransformPluginConfig extends GCPConfig {
 
   public String getDlpLocation() {
     return dlpLocation;
+  }
+
+  public String getDlpParentResourceLocation() {
+    String parent = "projects/" + getProject();
+    if (!Strings.isNullOrEmpty(getDlpLocation())) {
+      parent += "/locations/" + getDlpLocation();
+    }
+    return parent;
   }
 }
