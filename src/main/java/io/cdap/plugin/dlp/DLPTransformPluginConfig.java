@@ -19,6 +19,7 @@ package io.cdap.plugin.dlp;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.privacy.dlp.v2.LocationName;
 import io.cdap.cdap.api.annotation.Description;
 import io.cdap.cdap.api.annotation.Macro;
 import io.cdap.cdap.api.annotation.Name;
@@ -200,11 +201,14 @@ public class DLPTransformPluginConfig extends GCPConfig {
     return dlpLocation;
   }
 
-  public String getDlpParentResourceLocation() {
-    String parent = "projects/" + getProject();
-    if (!Strings.isNullOrEmpty(getDlpLocation())) {
-      parent += "/locations/" + getDlpLocation();
+  public String getDlpParentResourceLocationUtil(String project, String location) {
+    if (Strings.isNullOrEmpty(location)) {
+      location = "global";
     }
-    return parent;
+    return LocationName.format(project, location);
+  }
+
+  public String getDlpParentResourceLocation() {
+    return getDlpParentResourceLocationUtil(getProject(), getDlpLocation());
   }
 }

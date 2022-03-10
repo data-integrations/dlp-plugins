@@ -1,6 +1,7 @@
 package io.cdap.plugin.dlp;
 
 import com.google.privacy.dlp.v2.FieldId;
+import com.google.privacy.dlp.v2.LocationName;
 import com.google.privacy.dlp.v2.Table;
 import com.google.privacy.dlp.v2.Value;
 import io.cdap.cdap.api.data.format.StructuredRecord;
@@ -11,6 +12,7 @@ import io.cdap.cdap.etl.mock.validation.MockFailureCollector;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import java.lang.reflect.Field;
 
 import java.time.LocalDate;
 
@@ -113,31 +115,29 @@ public class UtilsTest {
   }
 
   @Test
-  public void testDlpLocation() {
-    //DLPTransformPluginConfig is initialized with 'null' projectId
-    //if this logic is changed, this test case is going to fail
+  public void testDlpLocation() throws NoSuchFieldException, IllegalAccessException {
     DLPTransformPluginConfig config = new DLPTransformPluginConfig();
-    config.customTemplateEnabled = false;
-    config.dlpLocation = "europe-west1";
-    Assert.assertEquals("projects/null/locations/europe-west1", config.getDlpParentResourceLocation());
+    String project = "test_project";
+    String location = "europe-west1";
+    Assert.assertEquals("projects/test_project/locations/europe-west1",
+        config.getDlpParentResourceLocationUtil(project, location));
   }
 
   @Test
   public void testNullDlpLocation() {
-    //DLPTransformPluginConfig is initialized with 'null' projectId
-    //if this logic is changed, this test case is going to fail
     DLPTransformPluginConfig config = new DLPTransformPluginConfig();
-    config.customTemplateEnabled = false;
-    Assert.assertEquals("projects/null", config.getDlpParentResourceLocation());
+    String project = "test_project";
+    String location = "";
+    Assert.assertEquals("projects/test_project/locations/global",
+        config.getDlpParentResourceLocationUtil(project, location));
   }
 
   @Test
   public void testEmptyDlpLocation() {
-    //DLPTransformPluginConfig is initialized with 'null' projectId
-    //if this logic is changed, this test case is going to fail
     DLPTransformPluginConfig config = new DLPTransformPluginConfig();
-    config.customTemplateEnabled = false;
-    config.dlpLocation = "";
-    Assert.assertEquals("projects/null", config.getDlpParentResourceLocation());
+    String project = "test_project";
+    String location = null;
+    Assert.assertEquals("projects/test_project/locations/global",
+        config.getDlpParentResourceLocationUtil(project, location));
   }
 }

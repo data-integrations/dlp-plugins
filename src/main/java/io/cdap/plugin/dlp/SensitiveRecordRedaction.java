@@ -21,8 +21,6 @@ import com.google.api.gax.rpc.ResourceExhaustedException;
 import com.google.cloud.dlp.v2.DlpServiceClient;
 import com.google.cloud.dlp.v2.DlpServiceSettings;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.privacy.dlp.v2.ContentItem;
 import com.google.privacy.dlp.v2.DeidentifyConfig;
 import com.google.privacy.dlp.v2.DeidentifyContentRequest;
