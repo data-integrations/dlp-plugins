@@ -155,7 +155,7 @@ public class SensitiveRecordDecrypt extends Transform<StructuredRecord, Structur
 
     ContentItem item = ContentItem.newBuilder().setTable(dlpTable).build();
     ReidentifyContentRequest.Builder requestBuilder = ReidentifyContentRequest.newBuilder()
-      .setParent(config.getDlpParentResourceLocation())
+      .setParent(config.getDlpParentResourceLocation().toString())
       .setReidentifyConfig(deidentifyConfig)
       .setItem(item);
 

@@ -201,14 +201,14 @@ public class DLPTransformPluginConfig extends GCPConfig {
     return dlpLocation;
   }
 
-  public String getDlpParentResourceLocationUtil(String project, String location) {
+  public LocationName getDlpParentResourceLocationUtil(String project, String location) {
     if (Strings.isNullOrEmpty(location)) {
       location = "global";
     }
-    return LocationName.format(project, location);
+    return LocationName.of(project, location);
   }
 
-  public String getDlpParentResourceLocation() {
+  public LocationName getDlpParentResourceLocation() {
     return getDlpParentResourceLocationUtil(getProject(), getDlpLocation());
   }
 }
