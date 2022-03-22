@@ -14,7 +14,7 @@ granted through the service account that is provided in the plugin configuration
 
 The `DLP Administrator` role must be granted to the service account to allow this plugin to access the DLP APIs.
 
-While using `Deterministic Encryption` with `KMS Wrapped Key`, `Cloud KMS CryptoKey Encrypter/Decrypter` role must be granted to `Cloud Data Loss Prevention Service Agent`
+While using `Deterministic Encryption` with `KMS Wrapped Key`, the `Cloud KMS CryptoKey Encrypter/Decrypter` role must be granted to `Cloud Data Loss Prevention Service Agent`
 
 Description
 -----------

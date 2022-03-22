@@ -288,6 +288,12 @@
       <version>0.23.0</version>
       <scope>compile</scope>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/com.google.cloud/google-cloud-kms -->
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-kms</artifactId>
+      <version>2.4.1</version>
+    </dependency>
   </dependencies>
 
   <build>

@@ -46,7 +46,7 @@
       "properties": [
         {
           "widget-type": "text",
-          "name": "dlpLocation",
+          "name": "location",
           "label": "Resource Location",
           "widget-attributes": {
             "default": "global"

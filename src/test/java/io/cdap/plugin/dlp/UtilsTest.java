@@ -1,27 +1,49 @@
 package io.cdap.plugin.dlp;
 
+import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.cloud.dlp.v2.DlpServiceClient;
+import com.google.cloud.dlp.v2.DlpServiceSettings;
+import com.google.privacy.dlp.v2.ByteContentItem;
+import com.google.privacy.dlp.v2.ContentItem;
 import com.google.privacy.dlp.v2.FieldId;
+import com.google.privacy.dlp.v2.InfoType;
+import com.google.privacy.dlp.v2.InspectConfig;
+import com.google.privacy.dlp.v2.InspectContentRequest;
+import com.google.privacy.dlp.v2.InspectContentResponse;
+import com.google.privacy.dlp.v2.InspectResult;
+import com.google.privacy.dlp.v2.Likelihood;
 import com.google.privacy.dlp.v2.LocationName;
 import com.google.privacy.dlp.v2.Table;
 import com.google.privacy.dlp.v2.Value;
+import com.google.protobuf.ByteString;
 import io.cdap.cdap.api.data.format.StructuredRecord;
 import io.cdap.cdap.api.data.schema.Schema;
 import io.cdap.cdap.api.data.schema.Schema.LogicalType;
-import io.cdap.cdap.etl.api.validation.ValidationException;
 import io.cdap.cdap.etl.mock.validation.MockFailureCollector;
+import io.cdap.plugin.gcp.common.GCPUtils;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import java.lang.reflect.Field;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class UtilsTest {
   Table.Builder tableBuilder;
   StructuredRecord.Builder recordBuilder;
+  static String serviceAccountFilePath;
+  static String messageTemplate;
+  static DlpServiceSettings dlpServiceSettings;
+  static DlpServiceClient dlpServiceClient;
+  static String projectId;
 
   @Before
-  public void beforeEach() {
+  public void beforeEach() throws Exception {
     tableBuilder = Table.newBuilder();
     FieldId.Builder firstNameBuilder = FieldId.newBuilder();
     firstNameBuilder.setName("firstName");
@@ -56,6 +78,28 @@ public class UtilsTest {
     rowBuilder.addValues(dateValueBuilder);
 
     tableBuilder.addRows(rowBuilder);
+  }
+
+  @BeforeClass
+  public static void beforeAll() throws Exception {
+    //Start DLP Client
+    messageTemplate = "%s is not configured, please refer to javadoc of this class for details.";
+    serviceAccountFilePath = System.getProperty("service.account.file");
+    Assume.assumeFalse(String.format(messageTemplate, "service account key file"), serviceAccountFilePath == null);
+    ServiceAccountCredentials serviceAccountCredentials =
+        GCPUtils.loadServiceAccountCredentials(serviceAccountFilePath);
+    projectId = serviceAccountCredentials.getProjectId();
+    DlpServiceSettings.Builder builder = DlpServiceSettings.newBuilder();
+    builder.setCredentialsProvider(() -> serviceAccountCredentials);
+    dlpServiceSettings = builder.build();
+    dlpServiceClient = DlpServiceClient.create(dlpServiceSettings);
+  }
+
+  @AfterClass
+  public static void afterAll() {
+    if (dlpServiceClient != null) {
+      dlpServiceClient.shutdown();
+    }
   }
 
   @Test
@@ -120,24 +164,68 @@ public class UtilsTest {
     String project = "test_project";
     String location = "europe-west1";
     Assert.assertEquals("projects/test_project/locations/europe-west1",
-        config.getDlpParentResourceLocationUtil(project, location).toString());
-  }
-
-  @Test
-  public void testNullDlpLocation() {
-    DLPTransformPluginConfig config = new DLPTransformPluginConfig();
-    String project = "test_project";
-    String location = "";
-    Assert.assertEquals("projects/test_project/locations/global",
-        config.getDlpParentResourceLocationUtil(project, location).toString());
+      config.getDlpParentResourceLocationUtil(project, location).toString());
   }
 
   @Test
   public void testEmptyDlpLocation() {
     DLPTransformPluginConfig config = new DLPTransformPluginConfig();
     String project = "test_project";
+    String location = "";
+    Assert.assertEquals("projects/test_project/locations/global",
+      config.getDlpParentResourceLocationUtil(project, location).toString());
+  }
+
+  @Test
+  public void testNullDlpLocation() {
+    DLPTransformPluginConfig config = new DLPTransformPluginConfig();
+    String project = "test_project";
     String location = null;
     Assert.assertEquals("projects/test_project/locations/global",
-        config.getDlpParentResourceLocationUtil(project, location).toString());
+      config.getDlpParentResourceLocationUtil(project, location).toString());
   }
+
+  @Test
+  public void testDlpConnection() throws Exception {
+    Assume.assumeFalse(String.format(messageTemplate, "DLP Service Client"), serviceAccountFilePath == null);
+    String text = "His name was Robert Frost";
+    ByteContentItem byteContentItem =
+        ByteContentItem.newBuilder()
+            .setType(ByteContentItem.BytesType.TEXT_UTF8)
+            .setData(ByteString.copyFromUtf8(text))
+            .build();
+    ContentItem contentItem = ContentItem.newBuilder().setByteItem(byteContentItem).build();
+
+    List<InfoType> infoTypes =
+        Stream.of("PERSON_NAME", "US_STATE")
+            .map(it -> InfoType.newBuilder().setName(it).build())
+            .collect(Collectors.toList());
+
+    Likelihood minLikelihood = Likelihood.POSSIBLE;
+
+    InspectConfig.FindingLimits findingLimits =
+        InspectConfig.FindingLimits.newBuilder().setMaxFindingsPerItem(0).build();
+
+    InspectConfig inspectConfig =
+        InspectConfig.newBuilder()
+            .addAllInfoTypes(infoTypes)
+            .setMinLikelihood(minLikelihood)
+            .setLimits(findingLimits)
+            .setIncludeQuote(true)
+            .build();
+
+    InspectContentRequest request =
+        InspectContentRequest.newBuilder()
+            .setParent(LocationName.of(projectId, "global").toString())
+            .setInspectConfig(inspectConfig)
+            .setItem(contentItem)
+            .build();
+
+    InspectContentResponse response = dlpServiceClient.inspectContent(request);
+
+    InspectResult result = response.getResult();
+
+    Assert.assertEquals(true, result.getFindingsList().size() > 0);
+  }
+
 }

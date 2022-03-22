@@ -25,8 +25,13 @@ import io.cdap.cdap.api.annotation.Macro;
 import io.cdap.cdap.api.annotation.Name;
 import io.cdap.cdap.api.data.schema.Schema;
 import io.cdap.cdap.etl.api.FailureCollector;
+import io.cdap.plugin.dlp.configs.CryptoDeterministicTransformationConfig;
+import io.cdap.plugin.dlp.configs.CryptoHashTransformationConfig;
+import io.cdap.plugin.dlp.configs.CryptoKeyHelper;
+import io.cdap.plugin.dlp.configs.CryptoKeyHelper.KeyType;
 import io.cdap.plugin.dlp.configs.DlpFieldTransformationConfig;
 import io.cdap.plugin.dlp.configs.DlpFieldTransformationConfigCodec;
+import io.cdap.plugin.dlp.configs.DlpTransformConfig;
 import io.cdap.plugin.dlp.configs.ErrorConfig;
 import io.cdap.plugin.gcp.common.GCPConfig;
 
@@ -47,7 +52,7 @@ public class DLPTransformPluginConfig extends GCPConfig {
   public static final String CUSTOM_TEMPLATE_PATH_NAME = "customTemplatePath";
   public static final String TEMPLATE_ID_NAME = "templateId";
   public static final String CUSTOM_TEMPLATE_ENABLED_NAME = "customTemplateEnabled";
-  public static final String DLP_LOCATION = "dlpLocation";
+  public static final String LOCATION = "location";
   @Macro
   protected String fieldsToTransform;
 
@@ -65,12 +70,12 @@ public class DLPTransformPluginConfig extends GCPConfig {
   @Nullable
   protected String customTemplatePath;
 
-  @Name(DLP_LOCATION)
+  @Name(LOCATION)
   @Description("Resource location of DLP Service "
-      + "(for more info: https://cloud.google.com/dlp/docs/specifying-location)")
+    + "(for more info: https://cloud.google.com/dlp/docs/specifying-location)")
   @Macro
   @Nullable
-  protected String dlpLocation;
+  protected String location;
 
   private static final Gson GSON = new GsonBuilder()
     .registerTypeAdapter(DlpFieldTransformationConfig.class, new DlpFieldTransformationConfigCodec())
@@ -181,6 +186,26 @@ public class DLPTransformPluginConfig extends GCPConfig {
               }
             }
           }
+
+          //Checking if location of wrapped key is same as DLP resource location
+          DlpTransformConfig transformProperties = config.getTransformProperties();
+          if (transformProperties instanceof CryptoDeterministicTransformationConfig) {
+            CryptoDeterministicTransformationConfig cryptoDeterministicTransformationConfig =
+              (CryptoDeterministicTransformationConfig) transformProperties;
+            if (cryptoDeterministicTransformationConfig.getKeyType() == KeyType.KMS_WRAPPED) {
+              String cryptoKeyName = cryptoDeterministicTransformationConfig.getCryptoKeyName();
+              CryptoKeyHelper.
+                validateCryptoKeyNameLocation(location, cryptoKeyName, collector, FIELDS_TO_TRANSFORM, LOCATION);
+            }
+          } else if (transformProperties instanceof CryptoHashTransformationConfig) {
+            CryptoHashTransformationConfig cryptoHashTransformationConfig =
+              (CryptoHashTransformationConfig) transformProperties;
+            if (cryptoHashTransformationConfig.getKeyType() == KeyType.KMS_WRAPPED) {
+              String cryptoKeyName = cryptoHashTransformationConfig.getCryptoKeyName();
+              CryptoKeyHelper.
+                validateCryptoKeyNameLocation(location, cryptoKeyName, collector, FIELDS_TO_TRANSFORM, LOCATION);
+            }
+          }
         }
 
         // If the user has a custom template enabled but doesnt use it in any of the transforms
@@ -197,8 +222,8 @@ public class DLPTransformPluginConfig extends GCPConfig {
     }
   }
 
-  public String getDlpLocation() {
-    return dlpLocation;
+  public String getLocation() {
+    return location;
   }
 
   public LocationName getDlpParentResourceLocationUtil(String project, String location) {
@@ -209,6 +234,6 @@ public class DLPTransformPluginConfig extends GCPConfig {
   }
 
   public LocationName getDlpParentResourceLocation() {
-    return getDlpParentResourceLocationUtil(getProject(), getDlpLocation());
+    return getDlpParentResourceLocationUtil(getProject(), getLocation());
   }
 }
