@@ -164,7 +164,7 @@ public class UtilsTest {
     String project = "test_project";
     String location = "europe-west1";
     Assert.assertEquals("projects/test_project/locations/europe-west1",
-      config.getDlpParentResourceLocationUtil(project, location).toString());
+      config.getLocationNameUtil(project, location).toString());
   }
 
   @Test
@@ -173,7 +173,7 @@ public class UtilsTest {
     String project = "test_project";
     String location = "";
     Assert.assertEquals("projects/test_project/locations/global",
-      config.getDlpParentResourceLocationUtil(project, location).toString());
+      config.getLocationNameUtil(project, location).toString());
   }
 
   @Test
@@ -182,7 +182,7 @@ public class UtilsTest {
     String project = "test_project";
     String location = null;
     Assert.assertEquals("projects/test_project/locations/global",
-      config.getDlpParentResourceLocationUtil(project, location).toString());
+      config.getLocationNameUtil(project, location).toString());
   }
 
   @Test
