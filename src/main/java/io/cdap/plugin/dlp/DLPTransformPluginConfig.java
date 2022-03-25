@@ -40,6 +40,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -141,7 +142,7 @@ public class DLPTransformPluginConfig extends GCPConfig {
 
   private void validateFieldConfigs(List<DlpFieldTransformationConfig> configs,
                                     FailureCollector collector, Schema inputSchema) {
-    HashMap<String, String> transforms = new HashMap<>();
+    Map<String, String> transforms = new HashMap<>();
     Boolean firstTransformUsedCustomTemplate = null;
     Boolean anyTransformUsedCustomTemplate = false;
     for (DlpFieldTransformationConfig config : configs) {
@@ -162,39 +163,36 @@ public class DLPTransformPluginConfig extends GCPConfig {
       anyTransformUsedCustomTemplate = anyTransformUsedCustomTemplate || filters.contains("NONE");
       if (firstTransformUsedCustomTemplate == null) {
         firstTransformUsedCustomTemplate = filters.contains("NONE");
-      } else {
-        if (filters.contains("NONE") != firstTransformUsedCustomTemplate) {
-          errorConfig.setTransformPropertyId("filters");
-          collector.addFailure("Cannot use custom templates and built-in filters in the same plugin instance.",
-                               "All transforms must use custom templates or built-in filters, not a "
-                                 + "combination of both.")
-            .withConfigElement(FIELDS_TO_TRANSFORM, GSON.toJson(errorConfig));
-        }
+      } else if (filters.contains("NONE") != firstTransformUsedCustomTemplate) {
+        errorConfig.setTransformPropertyId("filters");
+        collector.addFailure("Cannot use custom templates and built-in filters in the same plugin instance.",
+                             "All transforms must use custom templates or built-in filters, not a "
+                               + "combination of both.")
+          .withConfigElement(FIELDS_TO_TRANSFORM, GSON.toJson(errorConfig));
       }
 
       // Make sure the combination of field, transform and filter are unique
       for (String field : config.getFields()) {
         for (String filter : config.getFilterDisplayNames()) {
           String transformKey = String.format("%s:%s", field, filter);
-          if (transforms.containsKey(transformKey)) {
-
-            String errorMessage;
-            if (transforms.get(transformKey).equalsIgnoreCase(config.getTransform())) {
-              errorMessage = String.format(
-                "Combination of transform, filter and field must be unique. Found multiple definitions for '%s' "
-                  + "transform on '%s' with filter '%s'", config.getTransform(), field, filter);
-            } else {
-              errorMessage = String.format(
-                "Only one transform can be defined per field and filter combination. Found conflicting transforms"
-                  + " '%s' and '%s'",
-                transforms.get(transformKey), config.getTransform());
-            }
-            errorConfig.setTransformPropertyId("");
-            collector.addFailure(errorMessage, "")
-              .withConfigElement(FIELDS_TO_TRANSFORM, GSON.toJson(errorConfig));
-          } else {
+          if (!transforms.containsKey(transformKey)) {
             transforms.put(transformKey, config.getTransform());
+            continue;
           }
+          String errorMessage;
+          if (transforms.get(transformKey).equalsIgnoreCase(config.getTransform())) {
+            errorMessage = String.format(
+              "Combination of transform, filter and field must be unique. Found multiple definitions for '%s' "
+                + "transform on '%s' with filter '%s'", config.getTransform(), field, filter);
+          } else {
+            errorMessage = String.format(
+              "Only one transform can be defined per field and filter combination. Found conflicting transforms"
+                + " '%s' and '%s'",
+              transforms.get(transformKey), config.getTransform());
+          }
+          errorConfig.setTransformPropertyId("");
+          collector.addFailure(errorMessage, "")
+            .withConfigElement(FIELDS_TO_TRANSFORM, GSON.toJson(errorConfig));
         }
       }
 
@@ -228,20 +226,15 @@ public class DLPTransformPluginConfig extends GCPConfig {
     }
   }
 
-  @Nullable
   public String getLocation() {
+    if (Strings.isNullOrEmpty(location)) {
+      return "global";
+    }
     return location;
   }
 
-  public LocationName getLocationNameUtil(String project, @Nullable String location) {
-    if (Strings.isNullOrEmpty(location)) {
-      location = "global";
-    }
-    return LocationName.of(project, location);
-  }
-
   public LocationName getLocationName() {
-    return getLocationNameUtil(getProject(), getLocation());
+    return LocationName.of(getProject(), getLocation());
   }
 
 
