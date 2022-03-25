@@ -159,30 +159,24 @@ public class UtilsTest {
   }
 
   @Test
-  public void testDlpLocation() throws NoSuchFieldException, IllegalAccessException {
+  public void testLocation() {
     DLPTransformPluginConfig config = new DLPTransformPluginConfig();
-    String project = "test_project";
-    String location = "europe-west1";
-    Assert.assertEquals("projects/test_project/locations/europe-west1",
-      config.getLocationNameUtil(project, location).toString());
+    config.location = "europe-west1";
+    Assert.assertEquals("europe-west1", config.getLocation());
   }
 
   @Test
-  public void testEmptyDlpLocation() {
+  public void testEmptyLocation() {
     DLPTransformPluginConfig config = new DLPTransformPluginConfig();
-    String project = "test_project";
-    String location = "";
-    Assert.assertEquals("projects/test_project/locations/global",
-      config.getLocationNameUtil(project, location).toString());
+    config.location = "";
+    Assert.assertEquals("global", config.getLocation());
   }
 
   @Test
-  public void testNullDlpLocation() {
+  public void testNullLocation() {
     DLPTransformPluginConfig config = new DLPTransformPluginConfig();
-    String project = "test_project";
-    String location = null;
-    Assert.assertEquals("projects/test_project/locations/global",
-      config.getLocationNameUtil(project, location).toString());
+    config.location = null;
+    Assert.assertEquals("global", config.getLocation());
   }
 
   @Test
@@ -190,36 +184,36 @@ public class UtilsTest {
     Assume.assumeFalse(String.format(messageTemplate, "DLP Service Client"), serviceAccountFilePath == null);
     String text = "His name was Robert Frost";
     ByteContentItem byteContentItem =
-        ByteContentItem.newBuilder()
-            .setType(ByteContentItem.BytesType.TEXT_UTF8)
-            .setData(ByteString.copyFromUtf8(text))
-            .build();
+      ByteContentItem.newBuilder()
+        .setType(ByteContentItem.BytesType.TEXT_UTF8)
+        .setData(ByteString.copyFromUtf8(text))
+        .build();
     ContentItem contentItem = ContentItem.newBuilder().setByteItem(byteContentItem).build();
 
     List<InfoType> infoTypes =
-        Stream.of("PERSON_NAME", "US_STATE")
-            .map(it -> InfoType.newBuilder().setName(it).build())
-            .collect(Collectors.toList());
+      Stream.of("PERSON_NAME", "US_STATE")
+        .map(it -> InfoType.newBuilder().setName(it).build())
+        .collect(Collectors.toList());
 
     Likelihood minLikelihood = Likelihood.POSSIBLE;
 
     InspectConfig.FindingLimits findingLimits =
-        InspectConfig.FindingLimits.newBuilder().setMaxFindingsPerItem(0).build();
+      InspectConfig.FindingLimits.newBuilder().setMaxFindingsPerItem(0).build();
 
     InspectConfig inspectConfig =
-        InspectConfig.newBuilder()
-            .addAllInfoTypes(infoTypes)
-            .setMinLikelihood(minLikelihood)
-            .setLimits(findingLimits)
-            .setIncludeQuote(true)
-            .build();
+      InspectConfig.newBuilder()
+        .addAllInfoTypes(infoTypes)
+        .setMinLikelihood(minLikelihood)
+        .setLimits(findingLimits)
+        .setIncludeQuote(true)
+        .build();
 
     InspectContentRequest request =
-        InspectContentRequest.newBuilder()
-            .setParent(LocationName.of(projectId, "global").toString())
-            .setInspectConfig(inspectConfig)
-            .setItem(contentItem)
-            .build();
+      InspectContentRequest.newBuilder()
+        .setParent(LocationName.of(projectId, "global").toString())
+        .setInspectConfig(inspectConfig)
+        .setItem(contentItem)
+        .build();
 
     InspectContentResponse response = dlpServiceClient.inspectContent(request);
 
