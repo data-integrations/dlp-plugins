@@ -21,8 +21,6 @@ import com.google.api.gax.rpc.ResourceExhaustedException;
 import com.google.cloud.dlp.v2.DlpServiceClient;
 import com.google.cloud.dlp.v2.DlpServiceSettings;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.privacy.dlp.v2.ContentItem;
 import com.google.privacy.dlp.v2.DeidentifyConfig;
 import com.google.privacy.dlp.v2.DeidentifyContentRequest;
@@ -156,8 +154,7 @@ public class SensitiveRecordRedaction extends Transform<StructuredRecord, Struct
 
     ContentItem item = ContentItem.newBuilder().setTable(dlpTable).build();
     DeidentifyContentRequest.Builder requestBuilder = DeidentifyContentRequest.newBuilder()
-      .setParent(
-        "projects/" + config.getProject())
+      .setParent(config.getLocationName().toString())
       .setDeidentifyConfig(deidentifyConfig)
       .setItem(item);
     if (config.customTemplateEnabled) {

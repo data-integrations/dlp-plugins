@@ -42,6 +42,19 @@
       ]
     },
     {
+      "label": "Location",
+      "properties": [
+        {
+          "widget-type": "text",
+          "name": "location",
+          "label": "Resource Location",
+          "widget-attributes": {
+            "default": "global"
+          }
+        }
+      ]
+    },
+    {
       "label": "Decrypt",
       "properties": [
         {
