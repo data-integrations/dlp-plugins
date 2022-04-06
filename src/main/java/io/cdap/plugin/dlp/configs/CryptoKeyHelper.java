@@ -16,8 +16,6 @@
 
 package io.cdap.plugin.dlp.configs;
 
-import com.google.api.pathtemplate.ValidationException;
-import com.google.cloud.kms.v1.CryptoKeyName;
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import com.google.gson.Gson;
@@ -31,7 +29,6 @@ import io.cdap.cdap.etl.api.FailureCollector;
 import java.nio.charset.Charset;
 import java.util.Base64;
 import java.util.Random;
-import javax.annotation.Nullable;
 
 
 /**
@@ -130,34 +127,6 @@ public class CryptoKeyHelper {
             .withConfigElement(widgetName, gson.toJson(errorConfig));
         }
         break;
-    }
-  }
-
-  public static CryptoKeyName getCmekKey(@Nullable String cmekKey, FailureCollector collector, String widgetName) {
-    CryptoKeyName cmekKeyName = null;
-    if (Strings.isNullOrEmpty(cmekKey)) {
-      return cmekKeyName;
-    }
-    try {
-      cmekKeyName = CryptoKeyName.parse(cmekKey);
-    } catch (ValidationException e) {
-      collector.addFailure(e.getMessage(), null)
-        .withConfigProperty(widgetName).withStacktrace(e.getStackTrace());
-    }
-    return cmekKeyName;
-  }
-
-  public static void validateCryptoKeyNameLocation(String location, String cryptoKeyName, FailureCollector collector,
-                                                   String cryptoKeyNameWidgetName, String locationWidgetName) {
-    CryptoKeyName key = CryptoKeyHelper.getCmekKey(cryptoKeyName, collector, cryptoKeyNameWidgetName);
-    if (key != null) {
-      String keyLocation = key.getLocation();
-      String dlpLocation = Strings.isNullOrEmpty(location) ? "global" : location;
-      if (!keyLocation.equalsIgnoreCase(dlpLocation)) {
-        collector.addFailure("Location of DLP service and wrappedKey are not same.",
-                "DLP Resource location and wrappedKey location must be same.")
-          .withConfigProperty(locationWidgetName);
-      }
     }
   }
 }

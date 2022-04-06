@@ -88,12 +88,4 @@ public class CryptoDeterministicTransformationConfig implements DlpTransformConf
   public List<Schema.Type> getSupportedTypes() {
     return Arrays.asList(supportedTypes);
   }
-
-  public CryptoKeyHelper.KeyType getKeyType() {
-    return keyType;
-  }
-
-  public String getCryptoKeyName() {
-    return cryptoKeyName;
-  }
 }

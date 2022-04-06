@@ -22,7 +22,6 @@ import com.google.privacy.dlp.v2.PrimitiveTransformation;
 import io.cdap.cdap.api.data.schema.Schema;
 import io.cdap.cdap.etl.api.FailureCollector;
 
-import io.cdap.plugin.dlp.configs.CryptoKeyHelper.KeyType;
 import java.util.Arrays;
 import java.util.List;
 
@@ -60,12 +59,4 @@ public class CryptoHashTransformationConfig implements DlpTransformConfig {
   public List<Schema.Type> getSupportedTypes() {
     return Arrays.asList(supportedTypes);
   }
-
-  public String getCryptoKeyName() {
-    return cryptoKeyName;
-  }
-
-   public KeyType getKeyType() {
-    return keyType;
-   }
 }

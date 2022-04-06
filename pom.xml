@@ -70,14 +70,14 @@
   </distributionManagement>
 
   <properties>
-    <dlp.version>3.1.4</dlp.version>
+    <dlp.version>0.111.0-beta</dlp.version>
     <jee.version>7</jee.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <avro.version>1.8.2</avro.version>
     <commons.codec.version>1.4</commons.codec.version>
     <cdap.version>6.7.0-SNAPSHOT</cdap.version>
     <cdap.plugin.version>2.9.0-SNAPSHOT</cdap.plugin.version>
-    <google.protobuf.java.version>3.19.4</google.protobuf.java.version>
+    <google.protobuf.java.version>3.4.0</google.protobuf.java.version>
     <guava.version>27.0.1-jre</guava.version>
     <httpclient.version>4.5.6</httpclient.version>
     <jackson.core.version>2.9.10.1</jackson.core.version>
@@ -245,54 +245,6 @@
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
       <version>${httpclient.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
-      <version>2.9.0</version>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/com.google.auth/google-auth-library-oauth2-http -->
-    <dependency>
-      <groupId>com.google.auth</groupId>
-      <artifactId>google-auth-library-oauth2-http</artifactId>
-      <version>1.5.3</version>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/com.google.cloud/google-cloud-core -->
-    <dependency>
-      <groupId>com.google.cloud</groupId>
-      <artifactId>google-cloud-core</artifactId>
-      <version>2.5.6</version>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/io.grpc/grpc-netty-shaded -->
-    <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-netty-shaded</artifactId>
-      <version>1.44.1</version>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/io.opencensus/opencensus-api -->
-    <dependency>
-      <groupId>io.opencensus</groupId>
-      <artifactId>opencensus-api</artifactId>
-      <version>0.31.0</version>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/io.grpc/grpc-auth -->
-    <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-auth</artifactId>
-      <version>1.44.1</version>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/io.perfmark/perfmark-api -->
-    <dependency>
-      <groupId>io.perfmark</groupId>
-      <artifactId>perfmark-api</artifactId>
-      <version>0.23.0</version>
-      <scope>compile</scope>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/com.google.cloud/google-cloud-kms -->
-    <dependency>
-      <groupId>com.google.cloud</groupId>
-      <artifactId>google-cloud-kms</artifactId>
-      <version>2.4.1</version>
     </dependency>
   </dependencies>
 
