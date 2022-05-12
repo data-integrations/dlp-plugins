@@ -21,7 +21,7 @@
 
   <groupId>io.cdap.plugin</groupId>
   <artifactId>dlp</artifactId>
-  <version>1.3.0-SNAPSHOT</version>
+  <version>1.3.0</version>
   <name>Data Loss Prevention Plugins</name>
   <packaging>jar</packaging>
   <description>Plugins for Data Loss Prevention</description>
@@ -75,7 +75,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <avro.version>1.8.2</avro.version>
     <commons.codec.version>1.4</commons.codec.version>
-    <cdap.version>6.7.0-SNAPSHOT</cdap.version>
+    <cdap.version>6.1.1</cdap.version>
     <cdap.plugin.version>2.9.0-SNAPSHOT</cdap.plugin.version>
     <google.protobuf.java.version>3.19.4</google.protobuf.java.version>
     <guava.version>27.0.1-jre</guava.version>
