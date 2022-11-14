@@ -137,18 +137,16 @@ public final class SensitiveRecordFilter extends SplitterTransform<StructuredRec
     super.prepareRun(context);
 
     client = DlpServiceClient.create(getSettings());
-    String templateName = config.getCustomTemplate();
-    // if templateName is empty, we don't need to validate the template ID
-    if (Strings.isNullOrEmpty(templateName)) {
-      return;
-    }
-    GetInspectTemplateRequest request = GetInspectTemplateRequest.newBuilder().setName(templateName).build();
+    if (config.customTemplateEnabled) {
+      String templateName = config.getCustomTemplate();
+      GetInspectTemplateRequest request = GetInspectTemplateRequest.newBuilder().setName(templateName).build();
 
-    try {
-      InspectTemplate template = client.getInspectTemplate(request);
-    } catch (Exception e) {
-      throw new IllegalArgumentException(
-        "Unable to validate template name. Ensure template ID matches the specified ID in DLP");
+      try {
+        InspectTemplate template = client.getInspectTemplate(request);
+      } catch (Exception e) {
+        throw new IllegalArgumentException(
+          "Unable to validate template name. Ensure template ID matches the specified ID in DLP");
+      }
     }
   }
 
