@@ -129,7 +129,6 @@ public final class SensitiveRecordFilter extends SplitterTransform<StructuredRec
   public void initialize(TransformContext context) throws Exception {
     super.initialize(context);
 
-    client = DlpServiceClient.create(getSettings());
     metrics = context.getMetrics();
   }
 
@@ -137,7 +136,12 @@ public final class SensitiveRecordFilter extends SplitterTransform<StructuredRec
   public void prepareRun(StageSubmitterContext context) throws Exception {
     super.prepareRun(context);
 
+    client = DlpServiceClient.create(getSettings());
     String templateName = config.getCustomTemplate();
+    // if templateName is empty, we don't need to validate the template ID
+    if (Strings.isNullOrEmpty(templateName)) {
+      return;
+    }
     GetInspectTemplateRequest request = GetInspectTemplateRequest.newBuilder().setName(templateName).build();
 
     try {
