@@ -145,7 +145,7 @@ public final class SensitiveRecordFilter extends SplitterTransform<StructuredRec
         InspectTemplate template = client.getInspectTemplate(request);
       } catch (Exception e) {
         throw new IllegalArgumentException(
-          "Unable to validate template name. Ensure template ID matches the specified ID in DLP");
+          "Unable to validate template name. Ensure template ID matches the specified ID in DLP", e);
       }
     }
   }
