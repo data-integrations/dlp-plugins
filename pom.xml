@@ -77,7 +77,7 @@
     <commons.codec.version>1.4</commons.codec.version>
     <cdap.version>6.8.0-SNAPSHOT</cdap.version>
     <cdap.plugin.version>2.10.0-SNAPSHOT</cdap.plugin.version>
-    <google.protobuf.java.version>3.19.4</google.protobuf.java.version>
+    <google.protobuf.java.version>3.19.6</google.protobuf.java.version>
     <guava.version>27.0.1-jre</guava.version>
     <httpclient.version>4.5.6</httpclient.version>
     <jackson.core.version>2.9.10.1</jackson.core.version>
