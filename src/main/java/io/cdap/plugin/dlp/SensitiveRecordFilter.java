@@ -128,6 +128,9 @@ public final class SensitiveRecordFilter extends SplitterTransform<StructuredRec
   @Override
   public void initialize(TransformContext context) throws Exception {
     super.initialize(context);
+    if (client == null) {
+      client = DlpServiceClient.create(getSettings());
+    }
 
     metrics = context.getMetrics();
   }
@@ -145,7 +148,7 @@ public final class SensitiveRecordFilter extends SplitterTransform<StructuredRec
         InspectTemplate template = client.getInspectTemplate(request);
       } catch (Exception e) {
         throw new IllegalArgumentException(
-          "Unable to validate template name. Ensure template ID matches the specified ID in DLP");
+          "Unable to validate template name. Ensure template ID matches the specified ID in DLP", e);
       }
     }
   }
@@ -173,15 +176,17 @@ public final class SensitiveRecordFilter extends SplitterTransform<StructuredRec
       // depending on input schema field object
       contentItem = ContentItem.newBuilder().setValue(recordString).build();
 
-      String templateName = config.getCustomTemplate();
-
-      InspectContentRequest request =
+      InspectContentRequest.Builder requestBuilder =
         InspectContentRequest.newBuilder()
           .setParent(ProjectName.of(config.getProject()).toString())
-          .setInspectTemplateName(templateName)
-          .setItem(contentItem)
-          .build();
+          .setItem(contentItem);
 
+      if (config.customTemplateEnabled) {
+        String templateName = config.getCustomTemplate();
+        requestBuilder.setInspectTemplateName(templateName);
+      }
+
+      InspectContentRequest request = requestBuilder.build();
       //Record metrics for how many requests were sent to DLP
       metrics.count("dlp.requests.count", 1);
       InspectContentResponse response = client.inspectContent(request);
