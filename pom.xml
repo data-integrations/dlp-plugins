@@ -73,7 +73,7 @@
     <dlp.version>3.1.4</dlp.version>
     <jee.version>7</jee.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <avro.version>1.8.2</avro.version>
+    <avro.version>1.11.3</avro.version>
     <commons.codec.version>1.4</commons.codec.version>
     <cdap.version>6.8.0-SNAPSHOT</cdap.version>
     <cdap.plugin.version>2.10.0-SNAPSHOT</cdap.plugin.version>
