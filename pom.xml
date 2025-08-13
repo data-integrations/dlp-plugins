@@ -58,25 +58,14 @@
     <url>https://issues.cask.co/browse/CDAP</url>
   </issueManagement>
 
-  <distributionManagement>
-    <repository>
-      <id>sonatype.release</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-    </repository>
-    <snapshotRepository>
-      <id>sonatype.snapshots</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
-  </distributionManagement>
-
   <properties>
     <dlp.version>3.1.4</dlp.version>
     <jee.version>7</jee.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <avro.version>1.8.2</avro.version>
     <commons.codec.version>1.4</commons.codec.version>
-    <cdap.version>6.8.0-SNAPSHOT</cdap.version>
-    <cdap.plugin.version>2.10.0-SNAPSHOT</cdap.plugin.version>
+    <cdap.version>6.8.0</cdap.version>
+    <cdap.plugin.version>2.10.0</cdap.plugin.version>
     <google.protobuf.java.version>3.19.4</google.protobuf.java.version>
     <guava.version>27.0.1-jre</guava.version>
     <httpclient.version>4.5.6</httpclient.version>
@@ -88,18 +77,8 @@
 
   <repositories>
     <repository>
-      <id>sonatype</id>
-      <url>https://oss.sonatype.org/content/groups/public</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
       <id>sonatype-snapshots</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <url>https://central.sonatype.com/repository/maven-snapshots</url>
       <releases>
         <enabled>false</enabled>
       </releases>
@@ -461,13 +440,14 @@
           </plugin>
 
           <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.6.2</version>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.8.0</version>
             <extensions>true</extensions>
             <configuration>
-              <nexusUrl>https://oss.sonatype.org</nexusUrl>
-              <serverId>sonatype.release</serverId>
+              <publishingServerId>sonatype.release</publishingServerId>
+              <autoPublish>false</autoPublish>
+              <ignorePublishedComponents>true</ignorePublishedComponents>
             </configuration>
           </plugin>
 
