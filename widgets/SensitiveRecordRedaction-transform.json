@@ -488,7 +488,7 @@
                       "allowedTypes": [
                         "string"
                       ],
-                      "description": "(Optional) Provide additional field to be used as Context. If the primary value is the same but the Context field value is different then two different encrypted values will be generated."
+                      "description": "(Optional) Provide additional field to be used as Context. If the primary value is the same but the Context field value is different then two different encrypted values will be generated. For deterministic encryption, do not specifiy a context."
                     }
                   }
                 ],
@@ -639,7 +639,7 @@
                       "allowedTypes": [
                         "string"
                       ],
-                      "description": "(Optional) Provide additional field to be used as Context. If the primary value is the same but the Context field value is different then two different encrypted values will be generated."
+                      "description": "(Optional) Provide additional field to be used as Context. If the primary value is the same but the Context field value is different then two different encrypted values will be generated. For deterministic encryption, do not specifiy a context."
                     }
                   }
                 ],
